@@ -1,25 +1,19 @@
-const express = require ('express')
-const mongoose = require ('mongoose')
-const bodyParser = require ('body-parser')
-require ('dotenv/config')
+const express = require ('express');
+const mongoose = require ('mongoose');
+const bodyParser = require ('body-parser');
+require ('dotenv/config');
 
-const app = express ()
+const app = express ();
 
-app.use (bodyParser.json ())
+app.use (bodyParser.json ());
 
-const authRoute = require ('./routes/auth')
+const authRoute = require ('./routes/auth');
 
-app.use ('/api/user', authRoute)
+app.use ('/api/user', authRoute);
 
-/*
-app.get ('/', (req, res) => {
-	res.send ('home')
-})
-*/
-
-mongoose.set ('strictQuery', true)
-mongoose.connect (process.env.DB_URL, () => { console.log ('MongoDB connected ...') })
+mongoose.set ('strictQuery', true);
+mongoose.connect (process.env.DB_URL, () => { console.log ('MongoDB connected ...') });
 
 app.listen (3000, () => {
 	console.log ('Server is running ...')
-})
+});

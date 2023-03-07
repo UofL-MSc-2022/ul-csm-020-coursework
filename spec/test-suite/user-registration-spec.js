@@ -1,8 +1,11 @@
 const axios = require ("axios");
+const VerboseReporter = require ('../support/verbose-reporter');
 
 const base_url = "http://localhost:3000"
 
 const { userValidationFields } = require ('../../source/models/user.js');
+
+jasmine.getEnv ().addReporter (VerboseReporter);
 
 describe ("registration test suite", function () {
 	const end_point = base_url + '/api/user/register';

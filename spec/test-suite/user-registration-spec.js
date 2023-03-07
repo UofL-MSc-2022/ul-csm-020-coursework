@@ -103,4 +103,21 @@ describe ("registration test suite", function () {
 			}
 		});
 	});
+
+	describe ("POST /api/user/register", function () {
+		const params = {
+			screen_name: "test_user",
+			email: "test_user#mail.com",
+			password: "password" };
+
+		it ("invalid email", async function () {
+			await axios.post (end_point, params)
+				.then (function (response) {
+					expect (true).toBe (false);
+				})
+				.catch (function (error) {
+					expect (error.response.status).toBe (400);
+				});
+		});
+	});
 });

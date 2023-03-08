@@ -7,9 +7,9 @@ const app = express ();
 
 app.use (bodyParser.json ());
 
-const authRoute = require ('./routes/auth');
+const userRoute = require ('./routes/user');
 
-app.use ('/api/user', authRoute);
+app.use ('/api/user', userRoute);
 
 mongoose.set ('strictQuery', true);
 mongoose.connect (process.env.DB_URL, () => { console.log ('MongoDB connected ...') });

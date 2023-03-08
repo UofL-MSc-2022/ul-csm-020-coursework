@@ -17,25 +17,24 @@ router.post ('/register', async (req, res) => {
 		if (error)
 			return res.status (400).send ({message: error ['details'] [0] ['message']});
 
-		const userExists = await UserModel.findOne ({email: req.body.email});
-		if (userExists)
-			return res.status (400).send ({message: 'User already exists.'});
-
 		const salt = await bcryptjs.genSalt (5);
 		const hashedPassword = await bcryptjs.hash (req.body.password, salt);
 
-		const user = new UserModel ({
+		new_user = await UserModel.create ({
 			screen_name: req.body.screen_name,
 			email: req.body.email,
 			password: hashedPassword
 		});
 
-		const savedUser = await user.save ();
-
-		res.send (savedUser);
+		res.send (new_user);
 	}
 	catch (err) {
-		res.status (400).send ({ message: err });
+		if (err.code == 11000)
+			msg = "User already exists";
+		else
+			msg = err
+
+		res.status (400).send ({ message: msg });
 	}
 })
 

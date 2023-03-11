@@ -8,8 +8,10 @@ const app = express ();
 app.use (bodyParser.json ());
 
 const userRoute = require ('./routes/user');
+const postRoute = require ('./routes/post');
 
 app.use ('/api/user', userRoute);
+app.use ('/api/post', postRoute);
 
 const mongo_db_url = new URL (process.env.NODE_ENV == 'prod' ? process.env.PROD_DB_URL : process.env.TEST_DB_URL);
 

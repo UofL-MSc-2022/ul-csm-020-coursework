@@ -10,7 +10,7 @@ const registerValidation = (data) => {
 	});
 
 	return schemaValidation.validate (data);
-}
+};
 
 const signInValidation = (data) => {
 	const schemaValidation = joi.object ({
@@ -19,7 +19,7 @@ const signInValidation = (data) => {
 	});
 
 	return schemaValidation.validate (data);
-}
+};
 
 module.exports.registerValidation = registerValidation;
 module.exports.signInValidation = signInValidation;

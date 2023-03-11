@@ -11,9 +11,13 @@ const userRoute = require ('./routes/user');
 
 app.use ('/api/user', userRoute);
 
+const mongo_db_url = new URL (process.env.NODE_ENV == 'prod' ? process.env.PROD_DB_URL : process.env.TEST_DB_URL);
+
 mongoose.set ('strictQuery', true);
-mongoose.connect (process.env.DB_URL, () => { console.log ('MongoDB connected ...') });
+mongoose.connect (mongo_db_url.href, () => {
+	console.log ('MongoDB connected [' + mongo_db_url.pathname + '] ...');
+});
 
 app.listen (3000, () => {
-	console.log ('Server is running ...')
+	console.log ('Server is running ...');
 });

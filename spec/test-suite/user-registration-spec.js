@@ -1,10 +1,12 @@
 const axios = require ("axios");
+const mongoose = require ("mongoose");
 const VerboseReporter = require ('../support/verbose-reporter');
 const config = require ('config');
+require ('dotenv/config');
 
 const base_url = "http://localhost:3000"
 
-const { userValidationFields } = require ('../../source/models/user.js');
+const { UserModel, userValidationFields } = require ('../../source/models/user');
 
 if (config.get ('verbose_testing'))
 	jasmine.getEnv ().addReporter (VerboseReporter);
@@ -123,6 +125,64 @@ describe ("registration test suite", function () {
 				.catch (function (error) {
 					expect (error.response.status).toBe (400);
 				});
+		});
+	});
+
+	describe ("POST /api/user/register", function () {
+		beforeAll (async function () {
+			mongoose.set ('strictQuery', true);
+			mongoose.connect (process.env.TEST_DB_URL, () => {
+				if (config.get ('verbose_testing'))
+					console.log ('MongoDB test db connected ...');
+			});
+		});
+
+		beforeEach (async function () {
+			delete_response = await UserModel.deleteMany ();
+
+			if (config.get ('verbose_testing'))
+				console.log ("users collection cleared, " + delete_response.deletedCount + " removed");
+		});
+
+		const params = [
+			{
+				screen_name: "test_user",
+				email: "test_user_a@mail.com",
+				password: "password" },
+			{
+				screen_name: "test_user",
+				email: "test_user_b@mail.com",
+				password: "password" } ];
+
+		describe ("valid registration", function () {
+			it ("valid registration", async function () {
+				await axios.post (end_point, params [0])
+					.then (function (response) {
+						expect (response.status).toBe (200);
+					});
+			});
+		});
+
+		describe ("duplicate registration", function () {
+			it ("duplicate registration", async function () {
+				await axios.post (end_point, params [0])
+					.then (function (response) {
+						expect (response.status).toBe (200);
+					});
+
+				await axios.post (end_point, params [0])
+					.then (function (response) {
+						expect (true).toBe (false);
+					})
+					.catch (function (error) {
+						expect (error.response.status).toBe (400);
+					});
+
+				await axios.post (end_point, params [1])
+					.then (function (response) {
+						expect (response.status).toBe (200);
+					});
+			});
 		});
 	});
 });

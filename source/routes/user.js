@@ -8,7 +8,7 @@ const { UserModel } = require ('../models/user');
 const {
 	registerValidation,
 	signInValidation
-} = require ('../validations/validation');
+} = require ('../validations/user-validation');
 
 router.post ('/register', async (req, res) => {
 	try {
@@ -36,7 +36,7 @@ router.post ('/register', async (req, res) => {
 
 		res.status (400).send ({ message: msg });
 	}
-})
+});
 
 router.post ('/sign-in', async (req, res) => {
 	try {
@@ -61,6 +61,6 @@ router.post ('/sign-in', async (req, res) => {
 	catch (err) {
 		res.status (400).send ({ message: err });
 	}
-})
+});
 
 module.exports = router;

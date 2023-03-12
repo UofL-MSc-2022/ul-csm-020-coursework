@@ -58,12 +58,8 @@ describe ("jwt auth test suite", function () {
 		it ("valid token", async function () {
 			for (const user in await UserModel.find ()) {
 				const header_config = {
-					headers: {
-						Authorization: "Bearer " + createAccessToken (user.id)
-					}
+					headers: { Authorization: "Bearer " + createAccessToken (user.id) }
 				};
-
-				console.log (header_config);
 
 				await axios.get (end_point, header_config)
 					.then (function (response) {
@@ -80,6 +76,23 @@ describe ("jwt auth test suite", function () {
 					expect (true).toBe (false);
 				})
 				.catch (function (error) {
+					expect (error.response.status).toBe (401);
+				});
+		});
+	});
+
+	describe ("GET /api/version", function () {
+		it ("malformed token", async function () {
+			const header_config = {
+				headers: { Authorization: "Bearer 0xdeadbeef" }
+			};
+
+			await axios.get (end_point, header_config)
+				.then (function (response) {
+					expect (true).toBe (false);
+				})
+				.catch (function (error) {
+					console.log (error);
 					expect (error.response.status).toBe (401);
 				});
 		});

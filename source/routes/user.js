@@ -9,6 +9,7 @@ const {
 	registerValidation,
 	signInValidation
 } = require ('../validations/user-validation');
+const { createAccessToken } = require ('../auth/jwt');
 
 router.post ('/register', async (req, res) => {
 	try {
@@ -54,7 +55,7 @@ router.post ('/sign-in', async (req, res) => {
 		if (! validPassword)
 			return res.status (400).send ({message: 'Password is not correct.'});
 
-		const token = jwt.sign ({_id: user._id}, process.env.JWT_SECRET);
+		const token = createAccessToken (user.id);
 
 		res.header ('auth-token', token).send ({'auth-token': token});
 	}

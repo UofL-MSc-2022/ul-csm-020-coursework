@@ -1,3 +1,4 @@
 {
+	"jwt_access_token_expiry": "20m",
 	"verbose_testing": true
 }

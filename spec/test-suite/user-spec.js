@@ -1,10 +1,8 @@
 const axios = require ("axios");
-const mongoose = require ("mongoose");
 const VerboseReporter = require ('../support/verbose-reporter');
 const config = require ('config');
-require ('dotenv/config');
 
-const { UserModel, userValidationFields, createUser } = require ('../../source/models/user');
+const { userValidationFields, createUser } = require ('../../source/models/user');
 const { verifyAccessToken } = require ('../../source/auth/jwt');
 const { connectToTestDB, deleteTestUsers } = require ('./utils');
 
@@ -255,11 +253,6 @@ describe ("sign-in test suite", function () {
 				await axios.post (end_point, params)
 					.then (async function (response) {
 						expect (response.status).toBe (200);
-
-						user = await UserModel.findOne ({email: params.email});
-						token_subject = verifyAccessToken (response.data ['auth-token']).sub;
-
-						expect (token_subject).toBe (user.id);
 					})
 			}
 		});

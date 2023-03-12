@@ -7,9 +7,11 @@ const app = express ();
 
 app.use (bodyParser.json ());
 
+const versionRoute = require ('./routes/version');
 const userRoute = require ('./routes/user');
 const postRoute = require ('./routes/post');
 
+app.use ('/api/version', versionRoute);
 app.use ('/api/user', userRoute);
 app.use ('/api/post', postRoute);
 

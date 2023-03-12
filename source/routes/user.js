@@ -1,5 +1,4 @@
 const express = require ('express');
-const bcryptjs = require ('bcryptjs');
 
 const router = express.Router ();
 
@@ -43,13 +42,12 @@ router.post ('/sign-in', async (req, res) => {
 		if (! user)
 			return res.status (400).send ({message: 'User does not exist.'});
 
-		validPassword = await bcryptjs.compare (req.body.password, user.password);
-		if (! validPassword)
+		if (! await user.validPassword (req.body.password))
 			return res.status (400).send ({message: 'Password is not correct.'});
 
 		const token = createAccessToken (user.id);
 
-		res.header ('auth-token', token).send ({'auth-token': token});
+		res.send ({'auth-token': token});
 	}
 	catch (err) {
 		res.status (400).send ({ message: err });

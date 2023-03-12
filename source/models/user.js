@@ -9,6 +9,10 @@ const userSchema = mongoose.Schema ({
 	date: { type: Date, default: Date.now }
 });
 
+userSchema.methods.validPassword = async function (password) {
+	return await bcryptjs.compare (password, this.password);
+};
+
 const userValidationFields = {
 	screen_name: joi.string ().required ()
 		.min (userSchema.obj.screen_name.min).max (userSchema.obj.screen_name.max),

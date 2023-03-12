@@ -3,7 +3,7 @@ const VerboseReporter = require ('../support/verbose-reporter');
 const config = require ('config');
 
 const { UserModel, createUser } = require ('../../source/models/user');
-const { verifyAccessToken } = require ('../../source/auth/jwt');
+const { createAccessToken, verifyAccessToken } = require ('../../source/auth/jwt');
 const { connectToTestDB, deleteTestUsers } = require ('./utils');
 
 const base_url = "http://localhost:3000"
@@ -50,6 +50,25 @@ describe ("jwt auth test suite", function () {
 
 						expect (token_subject).toBe (user.id);
 					})
+			}
+		});
+	});
+
+	describe ("GET /api/version", function () {
+		it ("valid token", async function () {
+			for (const user in await UserModel.find ()) {
+				const header_config = {
+					headers: {
+						Authorization: "Bearer " + createAccessToken (user.id)
+					}
+				};
+
+				console.log (header_config);
+
+				await axios.get (end_point, header_config)
+					.then (function (response) {
+						expect (response.status).toBe (200);
+					});
 			}
 		});
 	});

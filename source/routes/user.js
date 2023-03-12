@@ -40,10 +40,10 @@ router.post ('/sign-in', async (req, res) => {
 		const user = await UserModel.findOne ({email: req.body.email});
 
 		if (! user)
-			return res.status (400).send ({message: 'User does not exist.'});
+			return res.status (401).send ({message: 'User does not exist.'});
 
 		if (! await user.validPassword (req.body.password))
-			return res.status (400).send ({message: 'Password is not correct.'});
+			return res.status (401).send ({message: 'Password is not correct.'});
 
 		const token = createAccessToken (user.id);
 

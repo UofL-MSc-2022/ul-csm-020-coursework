@@ -203,6 +203,28 @@ describe ("sign-in test suite", function () {
 	describe ("POST /api/user/sign-in", function () {
 		const params = [
 			{
+				email: "bademail#mail.com",
+				password: "password" },
+			{
+				email: "test_user_a@mail.com",
+				password: "p" } ];
+
+		it ("bad parameters", async function () {
+			for (const p of params) {
+				await axios.post (end_point, p)
+					.then (function (response) {
+						expect (true).toBe (false);
+					})
+					.catch (function (error) {
+						expect (error.response.status).toBe (400);
+					});
+			}
+		});
+	});
+
+	describe ("POST /api/user/sign-in", function () {
+		const params = [
+			{
 				email: "not_" + test_users [0].email,
 				password: test_users [0].password },
 			{
@@ -216,7 +238,7 @@ describe ("sign-in test suite", function () {
 						expect (true).toBe (false);
 					})
 					.catch (function (error) {
-						expect (error.response.status).toBe (400);
+						expect (error.response.status).toBe (401);
 					});
 			}
 		});

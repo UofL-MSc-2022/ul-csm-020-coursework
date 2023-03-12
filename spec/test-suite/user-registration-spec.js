@@ -184,6 +184,10 @@ describe ("sign-in test suite", function () {
 		{
 			screen_name: "test_user",
 			email: "test_user_a@mail.com",
+			password: "password" },
+		{
+			screen_name: "test_user",
+			email: "test_user_b@mail.com",
 			password: "password" }
 	];
 
@@ -191,7 +195,9 @@ describe ("sign-in test suite", function () {
 
 	beforeEach (async function () {
 		await deleteTestUsers ();
-		await createUser (test_users [0].screen_name, test_users [0].email, test_users [0].password);
+
+		for (user of test_users)
+			await createUser (user.screen_name, user.email, user.password);
 	});
 
 	describe ("POST /api/user/sign-in", function () {
@@ -212,6 +218,21 @@ describe ("sign-in test suite", function () {
 					.catch (function (error) {
 						expect (error.response.status).toBe (400);
 					});
+			}
+		});
+	});
+
+	describe ("POST /api/user/sign-in", function () {
+		it ("valid credentials", async function () {
+			for (const user of test_users) {
+				const params = {
+					email: user.email,
+					password: user.password };
+
+				await axios.post (end_point, params)
+					.then (function (response) {
+						expect (response.status).toBe (200);
+					})
 			}
 		});
 	});

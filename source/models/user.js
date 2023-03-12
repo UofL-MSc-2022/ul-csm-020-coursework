@@ -1,5 +1,6 @@
 const mongoose = require ('mongoose');
 const joi = require ('joi');
+const bcryptjs = require ('bcryptjs');
 
 const userSchema = mongoose.Schema ({
 	screen_name: { type: String, required: true, min: 3, max: 256 },
@@ -18,5 +19,19 @@ const userValidationFields = {
 		.min (userSchema.obj.password.min).max (userSchema.obj.password.max)
 };
 
-module.exports.UserModel = mongoose.model ('users', userSchema);
+const UserModel = mongoose.model ('users', userSchema);
+
+async function createUser (screen_name, email, password_plain) {
+	const salt = await bcryptjs.genSalt (5);
+	const password_crypt = await bcryptjs.hash (password_plain, salt);
+
+	return await UserModel.create ({
+		screen_name: screen_name,
+		email: email,
+		password: password_crypt
+	});
+}
+
+module.exports.UserModel = UserModel;
 module.exports.userValidationFields = userValidationFields;
+module.exports.createUser = createUser;

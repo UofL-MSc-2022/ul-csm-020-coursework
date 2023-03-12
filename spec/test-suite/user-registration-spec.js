@@ -4,9 +4,10 @@ const VerboseReporter = require ('../support/verbose-reporter');
 const config = require ('config');
 require ('dotenv/config');
 
-const base_url = "http://localhost:3000"
+const { UserModel, userValidationFields, createUser } = require ('../../source/models/user');
+const { connectToTestDB, deleteTestUsers } = require ('./utils');
 
-const { UserModel, userValidationFields } = require ('../../source/models/user');
+const base_url = "http://localhost:3000"
 
 if (config.get ('verbose_testing'))
 	jasmine.getEnv ().addReporter (VerboseReporter);
@@ -129,20 +130,9 @@ describe ("registration test suite", function () {
 	});
 
 	describe ("POST /api/user/register", function () {
-		beforeAll (async function () {
-			mongoose.set ('strictQuery', true);
-			mongoose.connect (process.env.TEST_DB_URL, () => {
-				if (config.get ('verbose_testing'))
-					console.log ('MongoDB test db connected ...');
-			});
-		});
+		beforeAll (function () { connectToTestDB (); });
 
-		beforeEach (async function () {
-			delete_response = await UserModel.deleteMany ();
-
-			if (config.get ('verbose_testing'))
-				console.log ("users collection cleared, " + delete_response.deletedCount + " removed");
-		});
+		beforeEach (async function () { await deleteTestUsers (); });
 
 		const params = [
 			{
@@ -183,6 +173,46 @@ describe ("registration test suite", function () {
 						expect (response.status).toBe (200);
 					});
 			});
+		});
+	});
+});
+
+describe ("sign-in test suite", function () {
+	const end_point = base_url + '/api/user/sign-in';
+
+	const test_users = [
+		{
+			screen_name: "test_user",
+			email: "test_user_a@mail.com",
+			password: "password" }
+	];
+
+	beforeAll (function () { connectToTestDB (); });
+
+	beforeEach (async function () {
+		await deleteTestUsers ();
+		await createUser (test_users [0].screen_name, test_users [0].email, test_users [0].password);
+	});
+
+	describe ("POST /api/user/sign-in", function () {
+		const params = [
+			{
+				email: "not_" + test_users [0].email,
+				password: test_users [0].password },
+			{
+				email: test_users [0].email,
+				password: "not_" + test_users [0].password } ];
+
+		it ("invalid credentials", async function () {
+			for (const p of params) {
+				await axios.post (end_point, p)
+					.then (function (response) {
+						expect (true).toBe (false);
+					})
+					.catch (function (error) {
+						expect (error.response.status).toBe (400);
+					});
+			}
 		});
 	});
 });

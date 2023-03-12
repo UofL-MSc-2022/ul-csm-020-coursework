@@ -1,10 +1,9 @@
 const express = require ('express');
 const bcryptjs = require ('bcryptjs');
-const jwt = require ('jsonwebtoken');
 
 const router = express.Router ();
 
-const { UserModel } = require ('../models/user');
+const { UserModel, createUser } = require ('../models/user');
 const {
 	registerValidation,
 	signInValidation
@@ -18,14 +17,7 @@ router.post ('/register', async (req, res) => {
 		if (error)
 			return res.status (400).send ({message: error ['details'] [0] ['message']});
 
-		const salt = await bcryptjs.genSalt (5);
-		const hashedPassword = await bcryptjs.hash (req.body.password, salt);
-
-		new_user = await UserModel.create ({
-			screen_name: req.body.screen_name,
-			email: req.body.email,
-			password: hashedPassword
-		});
+		new_user = await createUser (req.body.screen_name, req.body.email, req.body.password);
 
 		res.send (new_user);
 	}

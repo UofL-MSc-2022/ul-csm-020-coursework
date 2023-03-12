@@ -20,4 +20,11 @@ function createAccessToken (subject) {
 	return jwt.sign (payload, process.env.JWT_PRIVATE_KEY, token_options);
 }
 
+function verifyAccessToken (token) {
+	token_options = { algorithm: 'RS256' }
+
+	return jwt.verify (token, process.env.JWT_PUBLIC_KEY, token_options)
+}
+
 module.exports.createAccessToken = createAccessToken
+module.exports.verifyAccessToken = verifyAccessToken

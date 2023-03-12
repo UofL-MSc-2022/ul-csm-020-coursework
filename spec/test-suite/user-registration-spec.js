@@ -5,6 +5,7 @@ const config = require ('config');
 require ('dotenv/config');
 
 const { UserModel, userValidationFields, createUser } = require ('../../source/models/user');
+const { verifyAccessToken } = require ('../../source/auth/jwt');
 const { connectToTestDB, deleteTestUsers } = require ('./utils');
 
 const base_url = "http://localhost:3000"
@@ -246,14 +247,19 @@ describe ("sign-in test suite", function () {
 
 	describe ("POST /api/user/sign-in", function () {
 		it ("valid credentials", async function () {
-			for (const user of test_users) {
+			for (const user_params of test_users) {
 				const params = {
-					email: user.email,
-					password: user.password };
+					email: user_params.email,
+					password: user_params.password };
 
 				await axios.post (end_point, params)
-					.then (function (response) {
+					.then (async function (response) {
 						expect (response.status).toBe (200);
+
+						user = await UserModel.findOne ({email: params.email});
+						token_subject = verifyAccessToken (response.data ['auth-token']).sub;
+
+						expect (token_subject).toBe (user.id);
 					})
 			}
 		});

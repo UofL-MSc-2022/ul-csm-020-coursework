@@ -32,7 +32,7 @@ async function jwtAuth (req, res, next) {
 		const token_header = req.header ('Authorization');
 
 		if (! token_header || ! token_header.startsWith ('Bearer '))
-			return res.status (401).send ({message: 'Missing bearer token'})
+			return res.status (401).send ({message: 'Missing bearer token'});
 
 		const token = token_header.substring (6).trim ();
 
@@ -41,16 +41,20 @@ async function jwtAuth (req, res, next) {
 		req.user = await UserModel.findById (payload.sub);
 
 		if (req.user == null)
-			return res.status (401).send ({message: 'Unknown user'})
+			return res.status (401).send ({message: 'Unknown user'});
 
 		next ()
 	}
 	catch (err) {
-		console.log (err);
-		return res.status (401).send ({message: 'Access denied'})
+		if (err.name == 'TokenExpiredError')
+			msg = 'Token has expired';
+		else
+			msg = 'Access denied';
+
+		return res.status (401).send ({message: msg});
 	}
 }
 
-module.exports.createAccessToken = createAccessToken
-module.exports.verifyAccessToken = verifyAccessToken
-module.exports.jwtAuth = jwtAuth
+module.exports.createAccessToken = createAccessToken;
+module.exports.verifyAccessToken = verifyAccessToken;
+module.exports.jwtAuth = jwtAuth;

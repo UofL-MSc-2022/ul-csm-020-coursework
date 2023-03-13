@@ -1,6 +1,7 @@
 const axios = require ("axios");
 const VerboseReporter = require ('../support/verbose-reporter');
 const config = require ('config');
+const ms = require ('ms');
 
 const { UserModel, createUser } = require ('../../source/models/user');
 const { createAccessToken, verifyAccessToken } = require ('../../source/auth/jwt');
@@ -110,6 +111,35 @@ describe ("jwt auth test suite", function () {
 				.catch (function (error) {
 					expect (error.response.status).toBe (401);
 				});
+		});
+	});
+
+	describe ("GET /api/version", function () {
+		it ("expired token", async function () {
+			for (const user of await UserModel.find ({})) {
+				const token_expiry_ms = ms (config.get ('jwt_access_token_expiry'));
+				const mock_issue = new Date (Date.now () - (token_expiry_ms + 1000));
+
+				jasmine.clock ().install ();
+				jasmine.clock ().mockDate (mock_issue);
+
+				const token = createAccessToken (user.id);
+
+				jasmine.clock ().uninstall ();
+
+				const header_config = {
+					headers: { Authorization: "Bearer " + token }
+				};
+
+				await axios.get (end_point, header_config)
+					.then (function (response) {
+						expect (true).toBe (false);
+					})
+					.catch (function (error) {
+						expect (error.response.status).toBe (401);
+						expect (error.response.data.message).toBe ('Token has expired');
+					});
+			}
 		});
 	});
 });

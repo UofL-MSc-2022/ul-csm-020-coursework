@@ -40,6 +40,9 @@ async function jwtAuth (req, res, next) {
 
 		req.user = await UserModel.findById (payload.sub);
 
+		if (req.user == null)
+			return res.status (401).send ({message: 'Unknown user'})
+
 		next ()
 	}
 	catch (err) {

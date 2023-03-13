@@ -56,7 +56,7 @@ describe ("jwt auth test suite", function () {
 
 	describe ("GET /api/version", function () {
 		it ("valid token", async function () {
-			for (const user in await UserModel.find ()) {
+			for (const user of await UserModel.find ({})) {
 				const header_config = {
 					headers: { Authorization: "Bearer " + createAccessToken (user.id) }
 				};
@@ -84,7 +84,7 @@ describe ("jwt auth test suite", function () {
 	describe ("GET /api/version", function () {
 		it ("malformed token", async function () {
 			const header_config = {
-				headers: { Authorization: "Bearer 0xdeadbeef" }
+				headers: { Authorization: "Bearer DEADBEEF" }
 			};
 
 			await axios.get (end_point, header_config)
@@ -92,7 +92,22 @@ describe ("jwt auth test suite", function () {
 					expect (true).toBe (false);
 				})
 				.catch (function (error) {
-					console.log (error);
+					expect (error.response.status).toBe (401);
+				});
+		});
+	});
+
+	describe ("GET /api/version", function () {
+		it ("invalid payload", async function () {
+			const header_config = {
+				headers: { Authorization: "Bearer " + createAccessToken ('12345678DEADBEEF98765432') }
+			};
+
+			await axios.get (end_point, header_config)
+				.then (function (response) {
+					expect (true).toBe (false);
+				})
+				.catch (function (error) {
 					expect (error.response.status).toBe (401);
 				});
 		});

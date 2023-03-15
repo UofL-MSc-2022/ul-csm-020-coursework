@@ -1,7 +1,7 @@
 const axios = require ("axios");
 
 const common = require ('../support/common');
-const { userValidationFields, createUser } = require ('../../source/models/user');
+const { userValidationFields } = require ('../../source/models/user');
 const { verifyAccessToken } = require ('../../source/auth/jwt');
 
 common.initTestSuite ();
@@ -23,9 +23,9 @@ describe ("registration test suite", function () {
 
 	describe ("POST /api/user/register", function () {
 		const params = {
-			screen_name: "test_user",
-			email: "test_user@mail.com",
-			password: "password" };
+			screen_name: common.TEST_USERS [0].screen_name,
+			email: common.TEST_USERS [0].email,
+			password: common.TEST_USERS [0].password };
 
 		const subsets = [
 			["screen_name"], ["email"], ["password"],
@@ -63,9 +63,9 @@ describe ("registration test suite", function () {
 			password: "a".repeat (max_length ('password') + 1) };
 
 		const valid_params = {
-			screen_name: "test_user",
-			email: "test_user@mail.com",
-			password: "password" };
+			screen_name: common.TEST_USERS [0].screen_name,
+			email: common.TEST_USERS [0].email,
+			password: common.TEST_USERS [0].password };
 
 		const test_params = [
 			{
@@ -108,9 +108,9 @@ describe ("registration test suite", function () {
 
 	describe ("POST /api/user/register", function () {
 		const params = {
-			screen_name: "test_user",
-			email: "test_user#mail.com",
-			password: "password" };
+			screen_name: common.TEST_USERS [0].screen_name,
+			email: 'bademail#miniwall.com',
+			password: common.TEST_USERS [0].password };
 
 		it ("invalid email", async function () {
 			await axios.post (end_point, params)
@@ -124,23 +124,13 @@ describe ("registration test suite", function () {
 	});
 
 	describe ("POST /api/user/register", function () {
-		beforeAll (function () { common.connectToTestDB (); });
+		beforeAll (common.connectToTestDB);
 
-		beforeEach (async function () { await common.deleteTestUsers (); });
-
-		const params = [
-			{
-				screen_name: "test_user",
-				email: "test_user_a@mail.com",
-				password: "password" },
-			{
-				screen_name: "test_user",
-				email: "test_user_b@mail.com",
-				password: "password" } ];
+		beforeEach (common.deleteTestUsers);
 
 		describe ("valid registration", function () {
 			it ("valid registration", async function () {
-				await axios.post (end_point, params [0])
+				await axios.post (end_point, common.TEST_USERS [0])
 					.then (function (response) {
 						expect (response.status).toBe (200);
 					});
@@ -149,12 +139,12 @@ describe ("registration test suite", function () {
 
 		describe ("duplicate registration", function () {
 			it ("duplicate registration", async function () {
-				await axios.post (end_point, params [0])
+				await axios.post (end_point, common.TEST_USERS [0])
 					.then (function (response) {
 						expect (response.status).toBe (200);
 					});
 
-				await axios.post (end_point, params [0])
+				await axios.post (end_point, common.TEST_USERS [0])
 					.then (function (response) {
 						expect (true).toBe (false);
 					})
@@ -162,7 +152,7 @@ describe ("registration test suite", function () {
 						expect (error.response.status).toBe (400);
 					});
 
-				await axios.post (end_point, params [1])
+				await axios.post (end_point, common.TEST_USERS [1])
 					.then (function (response) {
 						expect (response.status).toBe (200);
 					});
@@ -174,33 +164,17 @@ describe ("registration test suite", function () {
 describe ("sign-in test suite", function () {
 	const end_point = common.TEST_APP_BASE_URL + '/api/user/sign-in';
 
-	const test_users = [
-		{
-			screen_name: "test_user",
-			email: "test_user_a@mail.com",
-			password: "password" },
-		{
-			screen_name: "test_user",
-			email: "test_user_b@mail.com",
-			password: "password" }
-	];
+	beforeAll (common.connectToTestDB);
 
-	beforeAll (function () { common.connectToTestDB (); });
-
-	beforeEach (async function () {
-		await common.deleteTestUsers ();
-
-		for (user of test_users)
-			await createUser (user.screen_name, user.email, user.password);
-	});
+	beforeEach (common.reloadTestUsers);
 
 	describe ("POST /api/user/sign-in", function () {
 		const params = [
 			{
-				email: "bademail#mail.com",
-				password: "password" },
+				email: "bademail#miniwall.com",
+				password: common.TEST_USERS [0].password },
 			{
-				email: "test_user_a@mail.com",
+				email: common.TEST_USERS [0].email,
 				password: "p" } ];
 
 		it ("bad parameters", async function () {
@@ -219,11 +193,11 @@ describe ("sign-in test suite", function () {
 	describe ("POST /api/user/sign-in", function () {
 		const params = [
 			{
-				email: "not_" + test_users [0].email,
-				password: test_users [0].password },
+				email: "not_" + common.TEST_USERS [0].email,
+				password: common.TEST_USERS [0].password },
 			{
-				email: test_users [0].email,
-				password: "not_" + test_users [0].password } ];
+				email: common.TEST_USERS [0].email,
+				password: "not_" + common.TEST_USERS [0].password } ];
 
 		it ("invalid credentials", async function () {
 			for (const p of params) {
@@ -240,7 +214,7 @@ describe ("sign-in test suite", function () {
 
 	describe ("POST /api/user/sign-in", function () {
 		it ("valid credentials", async function () {
-			for (const user_params of test_users) {
+			for (const user_params of common.TEST_USERS) {
 				const params = {
 					email: user_params.email,
 					password: user_params.password };

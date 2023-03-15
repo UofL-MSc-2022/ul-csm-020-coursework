@@ -3,7 +3,7 @@ const config = require ('config');
 require ('dotenv/config');
 
 const VerboseReporter = require ('./verbose-reporter');
-const { UserModel } = require ('../../source/models/user');
+const { UserModel, createUser } = require ('../../source/models/user');
 
 const TEST_APP_BASE_URL = "http://localhost:3000"
 
@@ -20,6 +20,20 @@ function connectToTestDB () {
 	});
 }
 
+const TEST_USERS = [
+	{
+		screen_name: "Olga",
+		email: "olga@miniwall.com",
+		password: "olgapass" },
+	{
+		screen_name: "Nick",
+		email: "nick@miniwall.com",
+		password: "nickpass" },
+	{
+		screen_name: "Mary",
+		email: "mary@miniwall.com",
+		password: "marypass" } ];
+
 async function deleteTestUsers () {
 	delete_response = await UserModel.deleteMany ();
 
@@ -27,7 +41,20 @@ async function deleteTestUsers () {
 		console.log ("users collection cleared, " + delete_response.deletedCount + " removed");
 }
 
+async function createTestUsers () {
+	for (user of TEST_USERS)
+		await createUser (user.screen_name, user.email, user.password);
+}
+
+async function reloadTestUsers () {
+	await deleteTestUsers ();
+	await createTestUsers ();
+}
+
 module.exports.TEST_APP_BASE_URL = TEST_APP_BASE_URL
 module.exports.initTestSuite = initTestSuite
 module.exports.connectToTestDB = connectToTestDB
+module.exports.TEST_USERS = TEST_USERS
 module.exports.deleteTestUsers = deleteTestUsers
+module.exports.createTestUsers = createTestUsers
+module.exports.reloadTestUsers = reloadTestUsers

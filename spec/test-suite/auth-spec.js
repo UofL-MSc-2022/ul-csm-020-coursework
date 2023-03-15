@@ -3,7 +3,7 @@ const ms = require ('ms');
 const config = require ('config');
 
 const common = require ('../support/common');
-const { UserModel, createUser } = require ('../../source/models/user');
+const { UserModel } = require ('../../source/models/user');
 const { createAccessToken, verifyAccessToken } = require ('../../source/auth/jwt');
 
 common.initTestSuite ();
@@ -11,31 +11,15 @@ common.initTestSuite ();
 describe ("jwt auth test suite", function () {
 	const end_point = common.TEST_APP_BASE_URL + '/api/version';
 
-	const test_users = [
-		{
-			screen_name: "test_user",
-			email: "test_user_a@mail.com",
-			password: "password" },
-		{
-			screen_name: "test_user",
-			email: "test_user_b@mail.com",
-			password: "password" }
-	];
+	beforeAll (common.connectToTestDB);
 
-	beforeAll (function () { common.connectToTestDB (); });
-
-	beforeEach (async function () {
-		await common.deleteTestUsers ();
-
-		for (user of test_users)
-			await createUser (user.screen_name, user.email, user.password);
-	});
+	beforeEach (common.reloadTestUsers);
 
 	describe ("POST /api/user/sign-in", function () {
 		const sign_in_end_point = common.TEST_APP_BASE_URL + '/api/user/sign-in';
 
 		it ("verify token payload", async function () {
-			for (const user_params of test_users) {
+			for (const user_params of common.TEST_USERS) {
 				const params = {
 					email: user_params.email,
 					password: user_params.password };

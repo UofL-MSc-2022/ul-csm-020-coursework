@@ -1,18 +1,13 @@
 const axios = require ("axios");
-const VerboseReporter = require ('../support/verbose-reporter');
-const config = require ('config');
 
+const common = require ('../support/common');
 const { userValidationFields, createUser } = require ('../../source/models/user');
 const { verifyAccessToken } = require ('../../source/auth/jwt');
-const { connectToTestDB, deleteTestUsers } = require ('./utils');
 
-const base_url = "http://localhost:3000"
-
-if (config.get ('verbose_testing'))
-	jasmine.getEnv ().addReporter (VerboseReporter);
+common.initTestSuite ();
 
 describe ("registration test suite", function () {
-	const end_point = base_url + '/api/user/register';
+	const end_point = common.TEST_APP_BASE_URL + '/api/user/register';
 
 	describe ("GET /api/user/register", function () {
 		it ("GET not found", async function () {
@@ -129,9 +124,9 @@ describe ("registration test suite", function () {
 	});
 
 	describe ("POST /api/user/register", function () {
-		beforeAll (function () { connectToTestDB (); });
+		beforeAll (function () { common.connectToTestDB (); });
 
-		beforeEach (async function () { await deleteTestUsers (); });
+		beforeEach (async function () { await common.deleteTestUsers (); });
 
 		const params = [
 			{
@@ -177,7 +172,7 @@ describe ("registration test suite", function () {
 });
 
 describe ("sign-in test suite", function () {
-	const end_point = base_url + '/api/user/sign-in';
+	const end_point = common.TEST_APP_BASE_URL + '/api/user/sign-in';
 
 	const test_users = [
 		{
@@ -190,10 +185,10 @@ describe ("sign-in test suite", function () {
 			password: "password" }
 	];
 
-	beforeAll (function () { connectToTestDB (); });
+	beforeAll (function () { common.connectToTestDB (); });
 
 	beforeEach (async function () {
-		await deleteTestUsers ();
+		await common.deleteTestUsers ();
 
 		for (user of test_users)
 			await createUser (user.screen_name, user.email, user.password);

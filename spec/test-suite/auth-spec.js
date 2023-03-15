@@ -1,19 +1,15 @@
 const axios = require ("axios");
-const VerboseReporter = require ('../support/verbose-reporter');
-const config = require ('config');
 const ms = require ('ms');
+const config = require ('config');
 
+const common = require ('../support/common');
 const { UserModel, createUser } = require ('../../source/models/user');
 const { createAccessToken, verifyAccessToken } = require ('../../source/auth/jwt');
-const { connectToTestDB, deleteTestUsers } = require ('./utils');
 
-const base_url = "http://localhost:3000"
-
-if (config.get ('verbose_testing'))
-	jasmine.getEnv ().addReporter (VerboseReporter);
+common.initTestSuite ();
 
 describe ("jwt auth test suite", function () {
-	const end_point = base_url + '/api/version';
+	const end_point = common.TEST_APP_BASE_URL + '/api/version';
 
 	const test_users = [
 		{
@@ -26,17 +22,17 @@ describe ("jwt auth test suite", function () {
 			password: "password" }
 	];
 
-	beforeAll (function () { connectToTestDB (); });
+	beforeAll (function () { common.connectToTestDB (); });
 
 	beforeEach (async function () {
-		await deleteTestUsers ();
+		await common.deleteTestUsers ();
 
 		for (user of test_users)
 			await createUser (user.screen_name, user.email, user.password);
 	});
 
 	describe ("POST /api/user/sign-in", function () {
-		const sign_in_end_point = base_url + '/api/user/sign-in';
+		const sign_in_end_point = common.TEST_APP_BASE_URL + '/api/user/sign-in';
 
 		it ("verify token payload", async function () {
 			for (const user_params of test_users) {

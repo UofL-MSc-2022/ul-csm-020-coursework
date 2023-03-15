@@ -5,10 +5,9 @@ const router = express.Router ();
 const { UserModel } = require ('../models/user');
 const { PostModel } = require ('../models/post');
 const { createValidation } = require ('../validations/post-validation');
+const { jwtAuth } = require ('../auth/jwt');
 
-router.post ('/create', async (req, res) => {
-	user = await UserModel.findOne ();
-
+router.post ('/create', jwtAuth, async (req, res) => {
 	try {
 		const {error} = createValidation (req.body);
 
@@ -18,7 +17,7 @@ router.post ('/create', async (req, res) => {
 		new_post = await PostModel.create ({
 			title: req.body.title,
 			body: req.body.body,
-			owner: user
+			owner: req.user
 		});
 
 		res.send (new_post);
@@ -28,7 +27,7 @@ router.post ('/create', async (req, res) => {
 	}
 });
 
-router.get ('/read/:post_id', async (req, res) => {
+router.get ('/read/:post_id', jwtAuth, async (req, res) => {
 	try {
 		post = await PostModel.findById (req.params.post_id);
 

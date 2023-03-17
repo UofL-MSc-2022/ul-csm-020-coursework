@@ -4,8 +4,8 @@ const bcryptjs = require ('bcryptjs');
 
 const userSchema = mongoose.Schema ({
 	screen_name: { type: String, required: true, min: 3, max: 256 },
-	email: { type: String, index: true, unique: true, required: true, min: 6, max: 256 },
-	password: { type: String, required: true, min: 6, max: 1024 },
+	email: { type: String, index: true, unique: true, required: true, select: false, min: 6, max: 256 },
+	password: { type: String, required: true, select: false, min: 6, max: 1024 },
 	date: { type: Date, default: Date.now }
 });
 

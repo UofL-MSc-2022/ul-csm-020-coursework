@@ -37,7 +37,7 @@ router.post ('/sign-in', async (req, res) => {
 		if (error)
 			return res.status (400).send ({message: error ['details'] [0] ['message']});
 
-		const user = await UserModel.findOne ({email: req.body.email});
+		const user = await UserModel.findOne ({email: req.body.email}).select ('+password');
 
 		if (! user)
 			return res.status (401).send ({message: 'User does not exist.'});

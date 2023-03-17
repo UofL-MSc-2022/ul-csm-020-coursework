@@ -145,7 +145,6 @@ describe ("post test suite", function () {
 						})
 						.catch (function (error) {
 							expect (error.response.status).toBe (400);
-							console.log (error.response.data);
 						});
 			});
 

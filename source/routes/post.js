@@ -27,14 +27,23 @@ router.post ('/create', jwtAuth, async (req, res) => {
 	}
 });
 
-router.get ('/read/:post_id', jwtAuth, async (req, res) => {
+async function validatePostID (req, res, next) {
 	try {
-		post = await PostModel.findById (req.params.post_id);
+		req.post = await PostModel.findById (req.params.post_id).populate ({path: 'owner', model: UserModel});
 
-		if (! post)
+		if (! req.post)
 			return res.status (400).send ({message: "No post with id " + req.params.post_id});
 
-		res.send (post);
+		next ();
+	}
+	catch (err) {
+		res.status (400).send ({ message: err });
+	}
+}
+
+router.get ('/read/:post_id', jwtAuth, validatePostID, async (req, res) => {
+	try {
+		res.send (req.post);
 	}
 	catch (err) {
 		res.status (400).send ({ message: err });

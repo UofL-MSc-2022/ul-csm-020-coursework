@@ -4,7 +4,7 @@ require ('dotenv/config');
 
 const VerboseReporter = require ('./verbose-reporter');
 const { UserModel, createUser } = require ('../../source/models/user');
-const { PostModel, createPost } = require ('../../source/models/post');
+const { PostModel } = require ('../../source/models/post');
 const { createAccessToken } = require ('../../source/auth/jwt');
 
 const TEST_APP_BASE_URL = "http://localhost:3000"
@@ -70,6 +70,49 @@ async function deleteTestPosts () {
 		console.log ("posts collection cleared, " + delete_response.deletedCount + " removed");
 }
 
+async function createTestPosts (test_users) {
+	const test_post_params = [
+		{
+			title: "Immigrant Song",
+			body: "I come from the land of the ice and snow." },
+		{
+			title: "Rebel Girl",
+			body: "That girl thinks she's the queen of the neighborhood." },
+		{
+			title: "Teenage Riot",
+			body: "Everybody's talking about the stormy weather." },
+		{
+			title: "Destination Venus",
+			body: "Twenty million miles of bleakness." },
+		{
+			title: "California Soul",
+			body: "Like a sound you hear that lingers in your ear." },
+		{
+			title: "The Revolution Will Not Be Televised",
+			body: "You will not be able to plug in, turn on and cop out." } ];
+
+	var test_posts = [];
+	var i = 0;
+	for (const user of test_users) {
+		for (var j = 0; j < 2; j++) {
+			params = {
+				title: test_post_params [i + j].title,
+				body: test_post_params [i + j].body,
+				owner: user };
+
+			test_posts.push (await PostModel.create (params));
+		}
+		i += j;
+	}
+
+	return test_posts;
+}
+
+async function reloadTestPosts (test_users) {
+	await deleteTestPosts ();
+	return await createTestPosts (test_users);
+}
+
 module.exports.TEST_APP_BASE_URL = TEST_APP_BASE_URL
 module.exports.initTestSuite = initTestSuite
 module.exports.connectToTestDB = connectToTestDB
@@ -78,3 +121,5 @@ module.exports.createTestUsers = createTestUsers
 module.exports.reloadTestUsers = reloadTestUsers
 module.exports.createTokenHeader = createTokenHeader
 module.exports.deleteTestPosts = deleteTestPosts
+module.exports.createTestPosts = createTestPosts
+module.exports.reloadTestPosts = reloadTestPosts

@@ -8,6 +8,7 @@ common.initTestSuite ();
 describe ("post test suite", function () {
 	const end_point_base = common.TEST_APP_BASE_URL + '/api/post';
 	const create_end_point = end_point_base + '/create';
+	const read_end_point = end_point_base + '/read';
 
 	it ("verify auth required", async function () {
 		const end_points = [
@@ -109,6 +110,54 @@ describe ("post test suite", function () {
 						.then (function (response) {
 							expect (response.status).toBe (200);
 							expect (response.data ['owner']).toBe (user.id);
+						});
+				}
+			});
+		});
+
+		describe ("read tests", function () {
+			beforeEach (async function () { this.test_posts = await common.reloadTestPosts (this.test_users); });
+
+			it ("missing parameters", async function () {
+				for (const post of this.test_posts) {
+					const req_config = {headers: common.createTokenHeader (this.test_users [0])};
+
+					await axios.get (read_end_point, req_config)
+						.then (function (response) {
+							expect (true).toBe (false);
+						})
+						.catch (function (error) {
+							expect (error.response.status).toBe (404);
+						});
+				}
+			});
+
+			it ("invalid parameters", async function () {
+				const req_config = {headers: common.createTokenHeader (this.test_users [0])};
+				const end_points = [
+					read_end_point + '/DEADBEEF', // Malformed ObjectID
+					read_end_point + '/12345678DEADBEEF98765432' ]; // Nonexistent ObjectID
+
+				for (end_point of end_points)
+					await axios.get (end_point, req_config)
+						.then (function (response) {
+							expect (true).toBe (false);
+						})
+						.catch (function (error) {
+							expect (error.response.status).toBe (400);
+							console.log (error.response.data);
+						});
+			});
+
+			it ("valid parameters", async function () {
+				for (const post of this.test_posts) {
+					const req_config = {headers: common.createTokenHeader (this.test_users [0])};
+					const end_point = read_end_point + '/' + post.id;
+
+					await axios.get (end_point, req_config)
+						.then (function (response) {
+							expect (response.status).toBe (200);
+							expect (response.data ['_id']).toBe (post.id);
 						});
 				}
 			});

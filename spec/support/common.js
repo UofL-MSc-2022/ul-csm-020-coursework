@@ -4,6 +4,7 @@ require ('dotenv/config');
 
 const VerboseReporter = require ('./verbose-reporter');
 const { UserModel, createUser } = require ('../../source/models/user');
+const { PostModel, createPost } = require ('../../source/models/post');
 const { createAccessToken } = require ('../../source/auth/jwt');
 
 const TEST_APP_BASE_URL = "http://localhost:3000"
@@ -62,6 +63,13 @@ function createTokenHeader (user) {
 	return {Authorization: 'Bearer ' + createAccessToken (user.id)}
 }
 
+async function deleteTestPosts () {
+	delete_response = await PostModel.deleteMany ();
+
+	if (config.get ('verbose_testing'))
+		console.log ("posts collection cleared, " + delete_response.deletedCount + " removed");
+}
+
 module.exports.TEST_APP_BASE_URL = TEST_APP_BASE_URL
 module.exports.initTestSuite = initTestSuite
 module.exports.connectToTestDB = connectToTestDB
@@ -69,3 +77,4 @@ module.exports.deleteTestUsers = deleteTestUsers
 module.exports.createTestUsers = createTestUsers
 module.exports.reloadTestUsers = reloadTestUsers
 module.exports.createTokenHeader = createTokenHeader
+module.exports.deleteTestPosts = deleteTestPosts

@@ -1,6 +1,7 @@
 const axios = require ("axios");
 
 const common = require ('../support/common');
+const { postValidationFields } = require ('../../source/models/post');
 
 common.initTestSuite ();
 
@@ -31,8 +32,10 @@ describe ("post test suite", function () {
 		beforeAll (common.connectToTestDB);
 		beforeEach (async function () { this.test_users = await common.reloadTestUsers (); });
 
-		describe ("missing required parameters", function () {
-			it ("create test", async function () {
+		describe ("create tests", function () {
+			beforeEach (common.deleteTestPosts);
+
+			it ("missing parameters", async function () {
 				const test_params = [{title: 'title'}, {body: 'body'}];
 
 				for (const user of this.test_users) {
@@ -46,6 +49,67 @@ describe ("post test suite", function () {
 							.catch (function (error) {
 								expect (error.response.status).toBe (400);
 							});
+				}
+			});
+
+			it ("invalid parameters", async function () {
+				const min_params = {
+					title: "a",
+					body: "a" };
+
+				const max_length = (key) =>
+					postValidationFields [key]._rules.filter (r => r.name == 'max') [0].args.limit;
+
+				const max_params = {
+					title: "a".repeat (max_length ('title') + 1),
+					body: "a".repeat (max_length ('body') + 1) };
+
+				const valid_params = {
+					title: 'title',
+					body: 'body' };
+
+				const test_params = [
+					{
+						title: min_params.title,
+						body: valid_params.body },
+					{
+						title: max_params.title,
+						body: valid_params.body },
+					{
+						title: valid_params.title,
+						body: min_params.body },
+					{
+						title: valid_params.title,
+						body: max_params.body } ];
+
+				for (const user of this.test_users) {
+					const req_config = {headers: common.createTokenHeader (user)};
+
+					for (const params of test_params) {
+						await axios.post (create_end_point, params, req_config)
+							.then (function (response) {
+								expect (true).toBe (false);
+							})
+							.catch (function (error) {
+								expect (error.response.status).toBe (400);
+							});
+					}
+				}
+			});
+
+			it ("valid parameters", async function () {
+				const valid_params = {
+					title: 'title',
+					body: 'body' };
+
+				for (const user of this.test_users) {
+					const req_config = {headers: common.createTokenHeader (user)};
+
+					await axios.post (create_end_point, valid_params, req_config)
+						.then (function (response) {
+							expect (response.status).toBe (200);
+							expect (response.data ['owner']).toBe (user.id);
+						});
 				}
 			});
 		});

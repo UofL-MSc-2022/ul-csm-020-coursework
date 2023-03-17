@@ -43,7 +43,7 @@ async function jwtAuth (req, res, next) {
 		if (req.user == null)
 			return res.status (401).send ({message: 'Unknown user'});
 
-		next ()
+		next ();
 	}
 	catch (err) {
 		if (err.name == 'TokenExpiredError')

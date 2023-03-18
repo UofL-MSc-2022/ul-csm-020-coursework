@@ -10,6 +10,7 @@ describe ("post test suite", function () {
 	const create_end_point = end_point_base + '/create';
 	const read_end_point = end_point_base + '/read';
 	const update_end_point = end_point_base + '/update';
+	const delete_end_point = end_point_base + '/delete';
 
 	it ("verify auth required", async function () {
 		const end_points = [
@@ -268,6 +269,58 @@ describe ("post test suite", function () {
 						});
 				}
 			}, 10000 /* Override default jasmine spec timeout */);
+		});
+
+		describe ("delete tests", function () {
+			beforeEach (async function () { this.test_posts = await common.reloadTestPosts (this.test_users); });
+
+			it ("wrong user", async function () {
+				for (const user of this.test_users) {
+					const posts = await PostModel.find ({ owner: { $ne: user } });
+
+					for (const post of posts) {
+						const end_point = delete_end_point + '/' + post.id;
+						const req_config = {headers: common.createTokenHeader (user.id)};
+
+						await axios.delete (end_point, valid_params, req_config)
+							.then (function (response) {
+								expect (true).toBe (false);
+							})
+							.catch (function (error) {
+								expect (error.response.status).toBe (401);
+							});
+					}
+				}
+			});
+
+			it ("invalid parameters", async function () {
+				const req_config = {headers: common.createTokenHeader (this.test_users [0].id)};
+				const end_points = [
+					delete_end_point + '/DEADBEEF', // Malformed ObjectID
+					delete_end_point + '/12345678DEADBEEF98765432' ]; // Nonexistent ObjectID
+
+				for (end_point of end_points)
+					await axios.delete (end_point, req_config)
+						.then (function (response) {
+							expect (true).toBe (false);
+						})
+						.catch (function (error) {
+							expect (error.response.status).toBe (400);
+						});
+			});
+
+			it ("valid parameters", async function () {
+				for (const post of this.test_posts) {
+					const req_config = {headers: common.createTokenHeader (post.owner)};
+					const end_point = delete_end_point + '/' + post.id;
+
+					await axios.delete (end_point, req_config)
+						.then (function (response) {
+							expect (response.status).toBe (200);
+							expect (response.data.deletedCount).toBe (1);
+						});
+				}
+			});
 		});
 	});
 });

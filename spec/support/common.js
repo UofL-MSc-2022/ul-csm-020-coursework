@@ -59,8 +59,8 @@ async function reloadTestUsers () {
 	return await createTestUsers ();
 }
 
-function createTokenHeader (user) {
-	return {Authorization: 'Bearer ' + createAccessToken (user.id)}
+function createTokenHeader (user_id) {
+	return {Authorization: 'Bearer ' + createAccessToken (user_id)}
 }
 
 async function deleteTestPosts () {

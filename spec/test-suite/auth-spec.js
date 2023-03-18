@@ -33,7 +33,7 @@ describe ("jwt auth test suite", function () {
 
 	it ("valid token", async function () {
 		for (const user of this.test_users) {
-			const req_config = {headers: common.createTokenHeader (user)};
+			const req_config = {headers: common.createTokenHeader (user.id)};
 
 			await axios.get (end_point, req_config)
 				.then (function (response) {

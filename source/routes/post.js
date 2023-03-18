@@ -4,7 +4,7 @@ const router = express.Router ();
 
 const { UserModel } = require ('../models/user');
 const { PostModel } = require ('../models/post');
-const { createValidation } = require ('../validations/post-validation');
+const { createValidation, updateValidation } = require ('../validations/post-validation');
 const { jwtAuth } = require ('../auth/jwt');
 
 router.post ('/create', jwtAuth, async (req, res) => {
@@ -41,8 +41,25 @@ async function validatePostID (req, res, next) {
 	}
 }
 
-router.get ('/read/:post_id', jwtAuth, validatePostID, async (req, res) => {
+router.get ('/read/:post_id', jwtAuth, validatePostID, (req, res) => {
 	try {
+		res.send (req.post);
+	}
+	catch (err) {
+		res.status (400).send ({ message: err });
+	}
+});
+
+router.patch ('/update/:post_id', jwtAuth, validatePostID, (req, res) => {
+	try {
+		if (req.post.owner.id != req.user.id)
+			return res.status (401).send ({message: "Signed in user is not the post owner"});
+
+		const {error} = updateValidation (req.body);
+
+		if (error)
+			return res.status (400).send ({message: error ['details'] [0] ['message']});
+
 		res.send (req.post);
 	}
 	catch (err) {

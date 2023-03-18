@@ -218,19 +218,56 @@ describe ("post test suite", function () {
 				}
 			}, 10000 /* Override default jasmine spec timeout */);
 
-/*
+			/* Note: This spec makes 18 requests (6 test posts, 3 parameter
+			 * configurations per post) of the test deployment and requires
+			 * longer than the default 5000 ms to complete.
+			 */
 			it ("valid parameters", async function () {
-				for (const post of this.test_posts) {
-					const req_config = {headers: common.createTokenHeader (this.test_users [0])};
-					const end_point = read_end_point + '/' + post.id;
+				const test_params = {
+					first_title_change: { title: 'first_title_change' },
+					first_body_change: { body: 'first_body_change' },
+					second_change: { title: 'second_title_change', body: 'second_body_change' } };
 
-					await axios.get (end_point, req_config)
+				for (const post of this.test_posts) {
+					const original_body = post.body;
+
+					const end_point = update_end_point + '/' + post.id;
+					const req_config = {headers: common.createTokenHeader (post.owner)};
+
+					// First title change
+					await axios.patch (end_point, test_params.first_title_change, req_config)
 						.then (function (response) {
 							expect (response.status).toBe (200);
-							expect (response.data ['_id']).toBe (post.id);
+
+							const updated_post = response.data;
+
+							expect (updated_post.title).toBe (test_params.first_title_change.title);
+							expect (updated_post.body).toBe (original_body);
+						});
+
+					// First body change (title already changed)
+					await axios.patch (end_point, test_params.first_body_change, req_config)
+						.then (function (response) {
+							expect (response.status).toBe (200);
+
+							const updated_post = response.data;
+
+							expect (updated_post.title).toBe (test_params.first_title_change.title);
+							expect (updated_post.body).toBe (test_params.first_body_change.body);
+						});
+
+					// Second change (both parameters changed)
+					await axios.patch (end_point, test_params.second_change, req_config)
+						.then (function (response) {
+							expect (response.status).toBe (200);
+
+							const updated_post = response.data;
+
+							expect (updated_post.title).toBe (test_params.second_change.title);
+							expect (updated_post.body).toBe (test_params.second_change.body);
 						});
 				}
-			}); */
+			}, 10000 /* Override default jasmine spec timeout */);
 		});
 	});
 });

@@ -50,7 +50,7 @@ router.get ('/read/:post_id', jwtAuth, validatePostID, (req, res) => {
 	}
 });
 
-router.patch ('/update/:post_id', jwtAuth, validatePostID, (req, res) => {
+router.patch ('/update/:post_id', jwtAuth, validatePostID, async (req, res) => {
 	try {
 		if (req.post.owner.id != req.user.id)
 			return res.status (401).send ({message: "Signed in user is not the post owner"});
@@ -59,6 +59,9 @@ router.patch ('/update/:post_id', jwtAuth, validatePostID, (req, res) => {
 
 		if (error)
 			return res.status (400).send ({message: error ['details'] [0] ['message']});
+
+		await req.post.updateOne (req.body);
+		req.post = await PostModel.findById (req.post.id);
 
 		res.send (req.post);
 	}

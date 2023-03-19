@@ -2,24 +2,9 @@ const express = require ('express');
 
 const router = express.Router ();
 
-const { UserModel } = require ('../models/user');
 const { PostModel } = require ('../models/post');
-const { createValidation, updateValidation } = require ('../validations/post-validation');
+const { createValidation, updateValidation, validatePostID } = require ('../validations/post-validation');
 const { jwtAuth } = require ('../auth/jwt');
-
-async function validatePostID (req, res, next) {
-	try {
-		req.post = await PostModel.findById (req.params.post_id).populate ({path: 'owner', model: UserModel});
-
-		if (! req.post)
-			return res.status (400).send ({message: "No post with id " + req.params.post_id});
-
-		next ();
-	}
-	catch (err) {
-		res.status (400).send ({ message: err });
-	}
-}
 
 function verifyPostOwner (req, res, next) {
 	if (req.post.owner.id != req.user.id)

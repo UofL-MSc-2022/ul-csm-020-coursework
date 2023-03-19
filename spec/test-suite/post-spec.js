@@ -16,10 +16,16 @@ describe ("post test suite", function () {
 		const end_points = [
 			{
 				method: 'post',
-				url: end_point_base + '/create' },
+				url: create_end_point },
 			{
 				method: 'get',
-				url: end_point_base + '/read/deadbeef' } ];
+				url: read_end_point + '/DEADBEEF' },
+			{
+				method: 'patch',
+				url: update_end_point + '/DEADBEEF' },
+			{
+				method: 'delete',
+				url: delete_end_point + '/DEADBEEF' } ];
 
 		for (const end_point of end_points)
 			await axios ({method: end_point.method, url: end_point.url})

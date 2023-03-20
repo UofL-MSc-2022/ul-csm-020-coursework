@@ -178,6 +178,8 @@ async function createTestComments () {
 		}
 	}
 
+	await CommentModel.populate (test_comments, {path: 'author', model: UserModel});
+
 	return test_comments;
 }
 

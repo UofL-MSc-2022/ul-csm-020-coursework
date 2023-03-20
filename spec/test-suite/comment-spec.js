@@ -10,6 +10,7 @@ describe ("comment test suite", function () {
 	const end_point_base = common.TEST_APP_BASE_URL + '/api/comment';
 	const create_end_point = end_point_base + '/create';
 	const read_end_point = end_point_base + '/read';
+	const update_end_point = end_point_base + '/update';
 
 	const valid_params = { body: 'body' };
 
@@ -23,6 +24,8 @@ describe ("comment test suite", function () {
 			this.valid_user_post_map.push ({
 				user: user,
 				posts: await PostModel.find ({ owner: { $ne: user } })});
+
+		this.test_comments = await common.reloadTestComments ();
 	});
 
 	it ("verify auth required", async function () {
@@ -32,7 +35,10 @@ describe ("comment test suite", function () {
 				url: create_end_point + '/DEADBEEF' },
 			{
 				method: 'get',
-				url: read_end_point + '/DEADBEEF' } ];
+				url: read_end_point + '/DEADBEEF' },
+			{
+				method: 'patch',
+				url: update_end_point + '/DEADBEEF' } ];
 
 		for (const end_point of end_points)
 			await axios ({method: end_point.method, url: end_point.url})
@@ -45,31 +51,52 @@ describe ("comment test suite", function () {
 	});
 
 	it ("wrong user", async function () {
+		// Create test
 		for (const post of this.test_posts) {
 			const auth_header = common.createTokenHeader (post.owner);
+			const end_point = create_end_point + '/' + post.id;
+
+			await axios.post (end_point, valid_params, auth_header)
+				.then (function (response) {
+					expect (true).toBe (false);
+				})
+				.catch (function (error) {
+					expect (error.response.status).toBe (401);
+				});
+		}
+
+		// Update and delete tests
+		for (const comment of this.test_comments) {
 			const requests = [
 				{
-					method: 'post',
-					end_point: create_end_point + '/' + post.id,
+					method: 'patch',
+					end_point: update_end_point + '/' + comment.id,
 					params: valid_params } ];
 
-			for (const req of requests) {
-				req_config = {
-					method: req.method,
-					url: req.end_point,
-					data: req.params,
-					headers: auth_header};
+			for (const user of this.test_users) {
+				if (user.id == comment.author.id)
+					continue;
 
-				await axios (req_config)
-					.then (function (response) {
-						expect (true).toBe (false);
-					})
-					.catch (function (error) {
-						expect (error.response.status).toBe (401);
-					});
+				const auth_header = common.createTokenHeader (user.id);
+
+				for (const req of requests) {
+					req_config = {
+						method: req.method,
+						url: req.end_point,
+						data: req.params,
+						headers: auth_header};
+
+					await axios (req_config)
+						.then (function (response) {
+							expect (true).toBe (false);
+						})
+						.catch (function (error) {
+							expect (error.response.status).toBe (401);
+						});
+				}
 			}
 		}
-	});
+	}, 10000); /* Override default jasmine spec timeout); */
 
 	describe ("verify CRUD methods", function () {
 		const min_params = { body: "a" };
@@ -140,17 +167,15 @@ describe ("comment test suite", function () {
 
 		describe ("read tests", function () {
 			it ("missing parameters", async function () {
-				for (const post of this.test_posts) {
-					const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
+				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
 
-					await axios.get (read_end_point, auth_header)
-						.then (function (response) {
-							expect (true).toBe (false);
-						})
-						.catch (function (error) {
-							expect (error.response.status).toBe (404);
-						});
-				}
+				await axios.get (read_end_point, auth_header)
+					.then (function (response) {
+						expect (true).toBe (false);
+					})
+					.catch (function (error) {
+						expect (error.response.status).toBe (404);
+					});
 			});
 
 			it ("invalid parameters", async function () {
@@ -182,7 +207,7 @@ describe ("comment test suite", function () {
 							expect (response.data ['_id']).toBe (comment.id);
 						});
 				}
-			}, 10000) /* Override default jasmine spec timeout); */
+			}, 10000); /* Override default jasmine spec timeout); */
 		});
 	});
 });

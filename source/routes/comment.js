@@ -21,6 +21,13 @@ function verifyNotPostOwner (req, res, next) {
 	next ();
 }
 
+function verifyCommentAuthor (req, res, next) {
+	if (req.comment.author.id != req.user.id)
+		return res.status (401).send ({message: "Signed in user is not the comment author"});
+
+	next ();
+}
+
 router.post ('/create/:post_id', jwtAuth, validatePostID, verifyNotPostOwner, async (req, res) => {
 	try {
 		const {error} = writeValidation (req.body);
@@ -48,24 +55,24 @@ router.get ('/read/:comment_id', jwtAuth, validateCommentID, (req, res) => {
 	}
 });
 
-/*
-router.patch ('/update/:post_id', jwtAuth, validatePostID, verifyPostOwner, async (req, res) => {
+router.patch ('/update/:comment_id', jwtAuth, validateCommentID, verifyCommentAuthor, async (req, res) => {
 	try {
-		const {error} = updateValidation (req.body);
+		const {error} = writeValidation (req.body);
 
 		if (error)
 			return res.status (400).send ({message: error ['details'] [0] ['message']});
 
-		await req.post.updateOne (req.body);
-		req.post = await PostModel.findById (req.post.id);
+		await req.comment.updateOne (req.body);
+		req.comment = await CommentModel.findById (req.comment.id);
 
-		res.send (req.post);
+		res.send (req.comment);
 	}
 	catch (err) {
 		res.status (400).send ({ message: err });
 	}
 });
 
+/*
 router.delete ('/delete/:post_id', jwtAuth, validatePostID, verifyPostOwner, async (req, res) => {
 	try {
 		res.send (await PostModel.deleteOne ({_id: req.post.id}));

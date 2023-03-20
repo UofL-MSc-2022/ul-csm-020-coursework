@@ -144,7 +144,7 @@ describe ("post test suite", function () {
 		});
 
 		describe ("read tests", function () {
-			fit ("missing parameters", async function () {
+			it ("missing parameters", async function () {
 				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
 
 				await axios.get (read_end_point, auth_header)

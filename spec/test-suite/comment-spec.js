@@ -96,7 +96,7 @@ describe ("comment test suite", function () {
 				}
 			}
 		}
-	}, 10000); /* Override default jasmine spec timeout); */
+	}, 10000); /* Override default jasmine spec timeout */
 
 	describe ("verify CRUD methods", function () {
 		const min_params = { body: "a" };
@@ -207,7 +207,7 @@ describe ("comment test suite", function () {
 							expect (response.data ['_id']).toBe (comment.id);
 						});
 				}
-			}, 10000); /* Override default jasmine spec timeout); */
+			}, 10000); /* Override default jasmine spec timeout */
 		});
 
 		describe ("update tests", function () {
@@ -228,7 +228,7 @@ describe ("comment test suite", function () {
 				}
 			});
 
-			fit ("invalid parameters", async function () {
+			it ("invalid parameters", async function () {
 				const test_params = [
 					{ body: min_params.body },
 					{ body: max_params.body } ];
@@ -238,7 +238,7 @@ describe ("comment test suite", function () {
 					const end_point = update_end_point + '/' + comment.id;
 
 					for (const params of test_params)
-						await axios.post (end_point, params, auth_header)
+						await axios.patch (end_point, params, auth_header)
 							.then (function (response) {
 								expect (true).toBe (false);
 							})
@@ -246,7 +246,7 @@ describe ("comment test suite", function () {
 								expect (error.response.status).toBe (400);
 							});
 				}
-			});
+			}, 10000); /* Override default jasmine spec timeout */
 
 			/* Note: This spec makes 18 requests (6 test posts, 3 parameter
 			 * configurations per post) of the test deployment and requires

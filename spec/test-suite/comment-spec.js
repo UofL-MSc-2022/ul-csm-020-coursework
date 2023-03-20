@@ -159,6 +159,9 @@ describe ("comment test suite", function () {
 								expect (response.status).toBe (200);
 								expect (response.data ['post']).toBe (post.id);
 								expect (response.data ['author']).toBe (user_posts.user.id);
+							})
+							.catch (function (error) {
+								expect (true).toBe (false);
 							});
 					}
 				}
@@ -205,6 +208,9 @@ describe ("comment test suite", function () {
 						.then (function (response) {
 							expect (response.status).toBe (200);
 							expect (response.data ['_id']).toBe (comment.id);
+						})
+						.catch (function (error) {
+							expect (true).toBe (false);
 						});
 				}
 			});
@@ -257,6 +263,9 @@ describe ("comment test suite", function () {
 						.then (function (response) {
 							expect (response.status).toBe (200);
 							expect (response.data.body).toBe (valid_params.body);
+						})
+						.catch (function (error) {
+							expect (true).toBe (false);
 						});
 				}
 			});

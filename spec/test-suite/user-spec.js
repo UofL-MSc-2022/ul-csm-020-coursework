@@ -124,6 +124,9 @@ describe ("registration test suite", function () {
 			await axios.post (end_point, valid_params [0])
 				.then (function (response) {
 					expect (response.status).toBe (200);
+				})
+				.catch (function (error) {
+					expect (true).toBe (false);
 				});
 		});
 
@@ -131,6 +134,9 @@ describe ("registration test suite", function () {
 			await axios.post (end_point, valid_params [0])
 				.then (function (response) {
 					expect (response.status).toBe (200);
+				})
+				.catch (function (error) {
+					expect (true).toBe (false);
 				});
 
 			await axios.post (end_point, valid_params [0])
@@ -144,6 +150,9 @@ describe ("registration test suite", function () {
 			await axios.post (end_point, valid_params [1])
 				.then (function (response) {
 					expect (response.status).toBe (200);
+				})
+				.catch (function (error) {
+					expect (true).toBe (false);
 				});
 		});
 	});
@@ -205,6 +214,9 @@ describe ("sign-in test suite", function () {
 				.then (async function (response) {
 					expect (response.status).toBe (200);
 				})
+				.catch (function (error) {
+					expect (true).toBe (false);
+				});
 		}
 	});
 });

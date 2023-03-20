@@ -38,6 +38,9 @@ describe ("jwt auth test suite", function () {
 			await axios.get (end_point, req_config)
 				.then (function (response) {
 					expect (response.status).toBe (200);
+				})
+				.catch (function (error) {
+					expect (true).toBe (false);
 				});
 		}
 	});

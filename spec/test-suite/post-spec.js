@@ -138,6 +138,9 @@ describe ("post test suite", function () {
 						.then (function (response) {
 							expect (response.status).toBe (200);
 							expect (response.data ['owner']).toBe (user.id);
+						})
+						.catch (function (error) {
+							expect (true).toBe (false);
 						});
 				}
 			});
@@ -181,6 +184,9 @@ describe ("post test suite", function () {
 						.then (function (response) {
 							expect (response.status).toBe (200);
 							expect (response.data ['_id']).toBe (post.id);
+						})
+						.catch (function (error) {
+							expect (true).toBe (false);
 						});
 				}
 			});
@@ -249,6 +255,9 @@ describe ("post test suite", function () {
 
 							expect (updated_post.title).toBe (test_params.first_title_change.title);
 							expect (updated_post.body).toBe (original_body);
+						})
+						.catch (function (error) {
+							expect (true).toBe (false);
 						});
 
 					// First body change (title already changed)
@@ -260,6 +269,9 @@ describe ("post test suite", function () {
 
 							expect (updated_post.title).toBe (test_params.first_title_change.title);
 							expect (updated_post.body).toBe (test_params.first_body_change.body);
+						})
+						.catch (function (error) {
+							expect (true).toBe (false);
 						});
 
 					// Second change (both parameters changed)
@@ -271,6 +283,9 @@ describe ("post test suite", function () {
 
 							expect (updated_post.title).toBe (test_params.second_change.title);
 							expect (updated_post.body).toBe (test_params.second_change.body);
+						})
+						.catch (function (error) {
+							expect (true).toBe (false);
 						});
 				}
 			});
@@ -302,6 +317,9 @@ describe ("post test suite", function () {
 						.then (function (response) {
 							expect (response.status).toBe (200);
 							expect (response.data.deletedCount).toBe (1);
+						})
+						.catch (function (error) {
+							expect (true).toBe (false);
 						});
 				}
 			});

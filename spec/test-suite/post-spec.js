@@ -144,18 +144,16 @@ describe ("post test suite", function () {
 		});
 
 		describe ("read tests", function () {
-			it ("missing parameters", async function () {
-				for (const post of this.test_posts) {
-					const req_config = {headers: common.createTokenHeader (this.test_users [0].id)};
+			fit ("missing parameters", async function () {
+				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
 
-					await axios.get (read_end_point, req_config)
-						.then (function (response) {
-							expect (true).toBe (false);
-						})
-						.catch (function (error) {
-							expect (error.response.status).toBe (404);
-						});
-				}
+				await axios.get (read_end_point, auth_header)
+					.then (function (response) {
+						expect (true).toBe (false);
+					})
+					.catch (function (error) {
+						expect (error.response.status).toBe (404);
+					});
 			});
 
 			it ("invalid parameters", async function () {

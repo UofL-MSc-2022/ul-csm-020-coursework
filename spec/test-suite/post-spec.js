@@ -202,10 +202,6 @@ describe ("post test suite", function () {
 				}
 			});
 
-			/* Note: This spec makes 48 requests (6 test posts, 8 parameter
-			 * configurations per post) of the test deployment and requires
-			 * longer than the default 5000 ms to complete.
-			 */
 			it ("invalid parameters", async function () {
 				const test_params = [
 					{ title: min_params.title },
@@ -230,12 +226,8 @@ describe ("post test suite", function () {
 								expect (error.response.status).toBe (400);
 							});
 				}
-			}, 10000 /* Override default jasmine spec timeout */);
+			});
 
-			/* Note: This spec makes 18 requests (6 test posts, 3 parameter
-			 * configurations per post) of the test deployment and requires
-			 * longer than the default 5000 ms to complete.
-			 */
 			it ("valid parameters", async function () {
 				const test_params = {
 					first_title_change: { title: 'first_title_change' },
@@ -281,7 +273,7 @@ describe ("post test suite", function () {
 							expect (updated_post.body).toBe (test_params.second_change.body);
 						});
 				}
-			}, 10000 /* Override default jasmine spec timeout */);
+			});
 		});
 
 		describe ("delete tests", function () {

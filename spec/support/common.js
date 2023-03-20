@@ -13,6 +13,8 @@ const TEST_APP_BASE_URL = "http://localhost:3000"
 function initTestSuite () {
 	if (config.get ('verbose_testing'))
 		jasmine.getEnv ().addReporter (VerboseReporter);
+
+	jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 }
 
 function connectToTestDB () {

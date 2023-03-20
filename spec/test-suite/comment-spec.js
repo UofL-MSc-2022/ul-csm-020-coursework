@@ -228,26 +228,17 @@ describe ("comment test suite", function () {
 				}
 			});
 
-			/* Note: This spec makes 48 requests (6 test posts, 8 parameter
-			 * configurations per post) of the test deployment and requires
-			 * longer than the default 5000 ms to complete.
-			it ("invalid parameters", async function () {
+			fit ("invalid parameters", async function () {
 				const test_params = [
-					{ title: min_params.title },
-					{ title: max_params.title },
 					{ body: min_params.body },
-					{ body: max_params.body },
-					{ title: min_params.title, body: valid_params.body },
-					{ title: max_params.title, body: valid_params.body },
-					{ title: valid_params.title, body: min_params.body },
-					{ title: valid_params.title, body: max_params.body } ];
+					{ body: max_params.body } ];
 
-				for (const post of this.test_posts) {
-					const end_point = update_end_point + '/' + post.id;
-					const req_config = {headers: common.createTokenHeader (post.owner)};
+				for (const comment of this.test_comments) {
+					const auth_header = {headers: common.createTokenHeader (comment.author.id)};
+					const end_point = update_end_point + '/' + comment.id;
 
-					for (params of test_params)
-						await axios.patch (end_point, params, req_config)
+					for (const params of test_params)
+						await axios.post (end_point, params, auth_header)
 							.then (function (response) {
 								expect (true).toBe (false);
 							})
@@ -255,7 +246,7 @@ describe ("comment test suite", function () {
 								expect (error.response.status).toBe (400);
 							});
 				}
-			}, 10000 /* Override default jasmine spec timeout);
+			});
 
 			/* Note: This spec makes 18 requests (6 test posts, 3 parameter
 			 * configurations per post) of the test deployment and requires

@@ -209,38 +209,16 @@ describe ("comment test suite", function () {
 				}
 			}, 10000); /* Override default jasmine spec timeout); */
 		});
-	});
-});
 
-			/*
 		describe ("update tests", function () {
-			beforeEach (async function () { this.test_posts = await common.reloadTestPosts (this.test_users); });
-
-			it ("wrong user", async function () {
-				for (const user of this.test_users) {
-					const posts = await PostModel.find ({ owner: { $ne: user } });
-
-					for (const post of posts) {
-						const end_point = update_end_point + '/' + post.id;
-						const req_config = {headers: common.createTokenHeader (user.id)};
-
-						await axios.patch (end_point, valid_params, req_config)
-							.then (function (response) {
-								expect (true).toBe (false);
-							})
-							.catch (function (error) {
-								expect (error.response.status).toBe (401);
-							});
-					}
-				}
-			});
+			beforeEach (async function () { this.test_comments = await common.reloadTestComments (); });
 
 			it ("missing parameters", async function () {
-				for (const post of this.test_posts) {
-					const end_point = update_end_point + '/' + post.id;
-					const req_config = {headers: common.createTokenHeader (post.owner)};
+				for (const comment of this.test_comments) {
+					const end_point = update_end_point + '/' + comment.id;
+					const auth_header = {headers: common.createTokenHeader (comment.author.id)};
 
-					await axios.patch (end_point, {}, req_config)
+					await axios.patch (end_point, {}, auth_header)
 						.then (function (response) {
 							expect (true).toBe (false);
 						})
@@ -327,9 +305,11 @@ describe ("comment test suite", function () {
 							expect (updated_post.body).toBe (test_params.second_change.body);
 						});
 				}
-			}, 10000 /* Override default jasmine spec timeout);
+			}, 10000 /* Override default jasmine spec timeout); */
 		});
-
+	});
+});
+/*
 		describe ("delete tests", function () {
 			beforeEach (async function () { this.test_posts = await common.reloadTestPosts (this.test_users); });
 

@@ -4,7 +4,7 @@ const router = express.Router ();
 
 const { CommentModel } = require ('../models/comment');
 const { validatePostID } = require ('../validations/post-validation');
-const { writeValidation } = require ('../validations/comment-validation');
+const { writeValidation, validateCommentID } = require ('../validations/comment-validation');
 const { jwtAuth } = require ('../auth/jwt');
 
 /*
@@ -39,16 +39,16 @@ router.post ('/create/:post_id', jwtAuth, validatePostID, verifyNotPostOwner, as
 	}
 });
 
-/*
-router.get ('/read/:post_id', jwtAuth, validatePostID, (req, res) => {
+router.get ('/read/:comment_id', jwtAuth, validateCommentID, (req, res) => {
 	try {
-		res.send (req.post);
+		res.send (req.comment);
 	}
 	catch (err) {
 		res.status (400).send ({ message: err });
 	}
 });
 
+/*
 router.patch ('/update/:post_id', jwtAuth, validatePostID, verifyPostOwner, async (req, res) => {
 	try {
 		const {error} = updateValidation (req.body);

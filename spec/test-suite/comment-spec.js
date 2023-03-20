@@ -77,18 +77,41 @@ describe ("comment test suite", function () {
 
 			it ("missing parameters", async function () {
 				for (const user_posts of this.valid_user_post_map) {
-					const req_config = {headers: common.createTokenHeader (user_posts.user.id)};
+					const auth_header = {headers: common.createTokenHeader (user_posts.user.id)};
 
 					for (const post of user_posts.posts) {
 						const end_point = create_end_point + '/' + post.id;
 
-						await axios.post (end_point, {}, req_config)
+						await axios.post (end_point, {}, auth_header)
 							.then (function (response) {
 								expect (true).toBe (false);
 							})
 							.catch (function (error) {
 								expect (error.response.status).toBe (400);
 							});
+					}
+				}
+			});
+
+			it ("invalid parameters", async function () {
+				const test_params = [
+					{ body: min_params.body },
+					{ body: max_params.body } ];
+
+				for (const user_posts of this.valid_user_post_map) {
+					const auth_header = {headers: common.createTokenHeader (user_posts.user.id)};
+
+					for (const post of user_posts.posts) {
+						const end_point = create_end_point + '/' + post.id;
+
+						for (const params of test_params)
+							await axios.post (end_point, params, auth_header)
+								.then (function (response) {
+									expect (true).toBe (false);
+								})
+								.catch (function (error) {
+									expect (error.response.status).toBe (400);
+								});
 					}
 				}
 			});
@@ -97,48 +120,6 @@ describe ("comment test suite", function () {
 });
 
 			/*
-			it ("wrong user", async function () {
-				for (const user of this.test_users) {
-					const posts = await PostModel.find ({ owner: { $ne: user } });
-
-					for (const post of posts) {
-						const end_point = update_end_point + '/' + post.id;
-						const req_config = {headers: common.createTokenHeader (user.id)};
-
-						await axios.patch (end_point, valid_params, req_config)
-							.then (function (response) {
-								expect (true).toBe (false);
-							})
-							.catch (function (error) {
-								expect (error.response.status).toBe (401);
-							});
-					}
-				}
-			});
-
-			/*
-			it ("invalid parameters", async function () {
-				const test_params = [
-					{ title: min_params.title, body: valid_params.body },
-					{ title: max_params.title, body: valid_params.body },
-					{ title: valid_params.title, body: min_params.body },
-					{ title: valid_params.title, body: max_params.body } ];
-
-				for (const user of this.test_users) {
-					const req_config = {headers: common.createTokenHeader (user.id)};
-
-					for (const params of test_params) {
-						await axios.post (create_end_point, params, req_config)
-							.then (function (response) {
-								expect (true).toBe (false);
-							})
-							.catch (function (error) {
-								expect (error.response.status).toBe (400);
-							});
-					}
-				}
-			});
-
 			it ("valid parameters", async function () {
 				for (const user of this.test_users) {
 					const req_config = {headers: common.createTokenHeader (user.id)};

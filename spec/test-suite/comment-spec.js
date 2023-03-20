@@ -248,6 +248,19 @@ describe ("comment test suite", function () {
 				}
 			}, 10000); /* Override default jasmine spec timeout */
 
+			it ("valid parameters", async function () {
+				for (const comment of this.test_comments) {
+					const auth_header = {headers: common.createTokenHeader (comment.author.id)};
+					const end_point = update_end_point + '/' + comment.id;
+
+					await axios.patch (end_point, valid_params, auth_header)
+						.then (function (response) {
+							expect (response.status).toBe (200);
+							expect (response.data.body).toBe (valid_params.body);
+						});
+				}
+			}, 10000); /* Override default jasmine spec timeout */
+
 			/* Note: This spec makes 18 requests (6 test posts, 3 parameter
 			 * configurations per post) of the test deployment and requires
 			 * longer than the default 5000 ms to complete.

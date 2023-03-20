@@ -15,7 +15,7 @@ async function validateCommentID (req, res, next) {
 	try {
 		req.comment = await CommentModel.findById (req.params.comment_id)
 			.populate ([
-				{path: 'post', model: PostModel},
+				{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},
 				{path: 'author', model: UserModel} ]);
 
 		if (! req.comment)

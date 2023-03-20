@@ -17,7 +17,7 @@ describe ("post test suite", function () {
 	beforeAll (common.connectToTestDB);
 	beforeEach (async function () {
 		this.test_users = await common.reloadTestUsers ();
-		this.test_posts = await common.reloadTestPosts (this.test_users); });
+		this.test_posts = await common.reloadTestPosts (); });
 
 	it ("verify auth required", async function () {
 		const end_points = [

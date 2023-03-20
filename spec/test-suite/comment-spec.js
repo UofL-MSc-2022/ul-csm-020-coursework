@@ -16,7 +16,7 @@ describe ("comment test suite", function () {
 	beforeAll (common.connectToTestDB);
 	beforeEach (async function () {
 		this.test_users = await common.reloadTestUsers ();
-		this.test_posts = await common.reloadTestPosts (this.test_users);
+		this.test_posts = await common.reloadTestPosts ();
 
 		this.valid_user_post_map = [];
 		for (const user of this.test_users)
@@ -168,25 +168,26 @@ describe ("comment test suite", function () {
 							expect (error.response.status).toBe (400);
 						});
 			});
+
+			it ("valid parameters", async function () {
+				test_comments = await common.reloadTestComments ();
+
+				for (const comment of test_comments) {
+					const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
+					const end_point = read_end_point + '/' + comment.id;
+
+					await axios.get (end_point, auth_header)
+						.then (function (response) {
+							expect (response.status).toBe (200);
+							expect (response.data ['_id']).toBe (comment.id);
+						});
+				}
+			}, 10000) /* Override default jasmine spec timeout); */
 		});
 	});
 });
 
 			/*
-			it ("valid parameters", async function () {
-				for (const post of this.test_posts) {
-					const req_config = {headers: common.createTokenHeader (this.test_users [0].id)};
-					const end_point = read_end_point + '/' + post.id;
-
-					await axios.get (end_point, req_config)
-						.then (function (response) {
-							expect (response.status).toBe (200);
-							expect (response.data ['_id']).toBe (post.id);
-						});
-				}
-			});
-		});
-
 		describe ("update tests", function () {
 			beforeEach (async function () { this.test_posts = await common.reloadTestPosts (this.test_users); });
 

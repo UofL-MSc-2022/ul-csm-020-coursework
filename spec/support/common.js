@@ -75,7 +75,7 @@ async function deleteTestPosts () {
 		console.log ("posts collection cleared, " + delete_response.deletedCount + " removed");
 }
 
-async function createTestPosts (test_users) {
+async function createTestPosts () {
 	const test_post_params = [
 		{
 			title: "Immigrant Song",
@@ -96,6 +96,8 @@ async function createTestPosts (test_users) {
 			title: "The Revolution Will Not Be Televised",
 			body: "You will not be able to plug in, turn on and cop out." } ];
 
+	const test_users = await UserModel.find ();
+
 	var test_posts = [];
 	var i = 0;
 	for (const user of test_users) {
@@ -107,15 +109,16 @@ async function createTestPosts (test_users) {
 
 			test_posts.push (await PostModel.create (params));
 		}
+
 		i += j;
 	}
 
 	return test_posts;
 }
 
-async function reloadTestPosts (test_users) {
+async function reloadTestPosts () {
 	await deleteTestPosts ();
-	return await createTestPosts (test_users);
+	return await createTestPosts ();
 }
 
 async function deleteTestComments () {
@@ -123,6 +126,64 @@ async function deleteTestComments () {
 
 	if (config.get ('verbose_testing'))
 		console.log ("comments collection cleared, " + delete_response.deletedCount + " removed");
+}
+
+async function createTestComments () {
+	const test_comment_bodies = [
+		"In these deep solitudes and awful cells,",
+		"Where heav'nly-pensive contemplation dwells,",
+		"And ever-musing melancholy reigns;",
+		"What means this tumult in a vestal's veins?",
+		"Why rove my thoughts beyond this last retreat?",
+		"Why feels my heart its long-forgotten heat?",
+		"Yet, yet I love!—From Abelard it came,",
+		"And Eloisa yet must kiss the name.",
+		"Dear fatal name! rest ever unreveal'd,",
+		"Nor pass these lips in holy silence seal'd.",
+		"Hide it, my heart, within that close disguise,",
+		"Where mix'd with God's, his lov'd idea lies:",
+		"O write it not, my hand—the name appears",
+		"Already written—wash it out, my tears!",
+		"In vain lost Eloisa weeps and prays,",
+		"Her heart still dictates, and her hand obeys.",
+		"Relentless walls! whose darksome round contains",
+		"Repentant sighs, and voluntary pains:",
+		"Ye rugged rocks! which holy knees have worn;",
+		"Ye grots and caverns shagg'd with horrid thorn!",
+		"Shrines! where their vigils pale-ey'd virgins keep,",
+		"And pitying saints, whose statues learn to weep!",
+		"Though cold like you, unmov'd, and silent grown,",
+		"I have not yet forgot myself to stone." ];
+
+	const test_users = await UserModel.find ();
+	const test_posts = await PostModel.find ().populate ({path: 'owner', model: UserModel});
+
+	var test_comments = [];
+	var i = 0;
+	for (const post of test_posts) {
+		for (const user of test_users) {
+			if (user.id == post.owner.id)
+				continue;
+
+			for (var j = 0; j < 2; j++) {
+				params = {
+					post: post,
+					body: test_comment_bodies [i + j],
+					author: user };
+
+				test_comments.push (await CommentModel.create (params));
+			}
+
+			i += j;
+		}
+	}
+
+	return test_comments;
+}
+
+async function reloadTestComments () {
+	await deleteTestComments ();
+	return await createTestComments ();
 }
 
 module.exports.TEST_APP_BASE_URL = TEST_APP_BASE_URL
@@ -137,3 +198,5 @@ module.exports.deleteTestPosts = deleteTestPosts
 module.exports.createTestPosts = createTestPosts
 module.exports.reloadTestPosts = reloadTestPosts
 module.exports.deleteTestComments = deleteTestComments
+module.exports.createTestComments = createTestComments
+module.exports.reloadTestComments = reloadTestComments

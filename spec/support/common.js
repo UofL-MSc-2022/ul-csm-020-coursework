@@ -5,6 +5,7 @@ require ('dotenv/config');
 const VerboseReporter = require ('./verbose-reporter');
 const { UserModel, createUser } = require ('../../source/models/user');
 const { PostModel } = require ('../../source/models/post');
+const { CommentModel } = require ('../../source/models/comment');
 const { createAccessToken } = require ('../../source/auth/jwt');
 
 const TEST_APP_BASE_URL = "http://localhost:3000"
@@ -20,6 +21,10 @@ function connectToTestDB () {
 		if (config.get ('verbose_testing'))
 			console.log ('MongoDB test db connected ...');
 	});
+}
+
+function maxValidLength (fields, key) {
+	return fields [key]._rules.filter (r => r.name == 'max') [0].args.limit;
 }
 
 async function deleteTestUsers () {
@@ -113,9 +118,17 @@ async function reloadTestPosts (test_users) {
 	return await createTestPosts (test_users);
 }
 
+async function deleteTestComments () {
+	delete_response = await CommentModel.deleteMany ();
+
+	if (config.get ('verbose_testing'))
+		console.log ("comments collection cleared, " + delete_response.deletedCount + " removed");
+}
+
 module.exports.TEST_APP_BASE_URL = TEST_APP_BASE_URL
 module.exports.initTestSuite = initTestSuite
 module.exports.connectToTestDB = connectToTestDB
+module.exports.maxValidLength = maxValidLength
 module.exports.deleteTestUsers = deleteTestUsers
 module.exports.createTestUsers = createTestUsers
 module.exports.reloadTestUsers = reloadTestUsers
@@ -123,3 +136,4 @@ module.exports.createTokenHeader = createTokenHeader
 module.exports.deleteTestPosts = deleteTestPosts
 module.exports.createTestPosts = createTestPosts
 module.exports.reloadTestPosts = reloadTestPosts
+module.exports.deleteTestComments = deleteTestComments

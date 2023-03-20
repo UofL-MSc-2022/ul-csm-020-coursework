@@ -12,6 +12,13 @@ describe ("post test suite", function () {
 	const update_end_point = end_point_base + '/update';
 	const delete_end_point = end_point_base + '/delete';
 
+	const valid_params = { title: 'title', body: 'body' };
+
+	beforeAll (common.connectToTestDB);
+	beforeEach (async function () {
+		this.test_users = await common.reloadTestUsers ();
+		this.test_posts = await common.reloadTestPosts (this.test_users); });
+
 	it ("verify auth required", async function () {
 		const end_points = [
 			{
@@ -37,24 +44,49 @@ describe ("post test suite", function () {
 				});
 	});
 
-	describe ("verify CRUD methods", function () {
-		beforeAll (common.connectToTestDB);
-		beforeEach (async function () { this.test_users = await common.reloadTestUsers (); });
+	it ("wrong user", async function () {
+		for (const user of this.test_users) {
+			const posts = await PostModel.find ({ owner: { $ne: user } });
+			const auth_header = common.createTokenHeader (user.id);
 
+			for (const post of posts) {
+				const requests = [
+					{
+						method: 'delete',
+						end_point: delete_end_point + '/' + post.id,
+						params: {} },
+					{
+						method: 'patch',
+						end_point: update_end_point + '/' + post.id,
+						params: valid_params } ];
+
+				for (const req of requests) {
+					req_config = {
+						method: req.method,
+						url: req.end_point,
+						data: req.params,
+						headers: auth_header};
+
+					await axios (req_config)
+						.then (function (response) {
+							expect (true).toBe (false);
+						})
+						.catch (function (error) {
+							expect (error.response.status).toBe (401);
+						});
+				}
+			}
+		}
+	});
+
+	describe ("verify CRUD methods", function () {
 		const min_params = {
 			title: "a",
 			body: "a" };
 
-		const max_length = (key) =>
-			postValidationFields [key]._rules.filter (r => r.name == 'max') [0].args.limit;
-
 		const max_params = {
-			title: "a".repeat (max_length ('title') + 1),
-			body: "a".repeat (max_length ('body') + 1) };
-
-		const valid_params = {
-			title: 'title',
-			body: 'body' };
+			title: "a".repeat (common.maxValidLength (postValidationFields, 'title') + 1),
+			body: "a".repeat (common.maxValidLength (postValidationFields, 'body') + 1) };
 
 		describe ("create tests", function () {
 			beforeEach (common.deleteTestPosts);
@@ -112,8 +144,6 @@ describe ("post test suite", function () {
 		});
 
 		describe ("read tests", function () {
-			beforeEach (async function () { this.test_posts = await common.reloadTestPosts (this.test_users); });
-
 			it ("missing parameters", async function () {
 				for (const post of this.test_posts) {
 					const req_config = {headers: common.createTokenHeader (this.test_users [0].id)};
@@ -159,27 +189,6 @@ describe ("post test suite", function () {
 		});
 
 		describe ("update tests", function () {
-			beforeEach (async function () { this.test_posts = await common.reloadTestPosts (this.test_users); });
-
-			it ("wrong user", async function () {
-				for (const user of this.test_users) {
-					const posts = await PostModel.find ({ owner: { $ne: user } });
-
-					for (const post of posts) {
-						const end_point = update_end_point + '/' + post.id;
-						const req_config = {headers: common.createTokenHeader (user.id)};
-
-						await axios.patch (end_point, valid_params, req_config)
-							.then (function (response) {
-								expect (true).toBe (false);
-							})
-							.catch (function (error) {
-								expect (error.response.status).toBe (401);
-							});
-					}
-				}
-			});
-
 			it ("missing parameters", async function () {
 				for (const post of this.test_posts) {
 					const end_point = update_end_point + '/' + post.id;
@@ -278,27 +287,6 @@ describe ("post test suite", function () {
 		});
 
 		describe ("delete tests", function () {
-			beforeEach (async function () { this.test_posts = await common.reloadTestPosts (this.test_users); });
-
-			it ("wrong user", async function () {
-				for (const user of this.test_users) {
-					const posts = await PostModel.find ({ owner: { $ne: user } });
-
-					for (const post of posts) {
-						const end_point = delete_end_point + '/' + post.id;
-						const req_config = {headers: common.createTokenHeader (user.id)};
-
-						await axios.delete (end_point, valid_params, req_config)
-							.then (function (response) {
-								expect (true).toBe (false);
-							})
-							.catch (function (error) {
-								expect (error.response.status).toBe (401);
-							});
-					}
-				}
-			});
-
 			it ("invalid parameters", async function () {
 				const req_config = {headers: common.createTokenHeader (this.test_users [0].id)};
 				const end_points = [

@@ -44,13 +44,10 @@ describe ("registration test suite", function () {
 			email: "a@b.c",
 			password: "a" };
 
-		const max_length = (key) =>
-			userValidationFields [key]._rules.filter (r => r.name == 'max') [0].args.limit;
-
 		const max_params = {
-			screen_name: "a".repeat (max_length ('screen_name') + 1),
-			email: "a".repeat (max_length ('email') + 1) + "@mail.com",
-			password: "a".repeat (max_length ('password') + 1) };
+			screen_name: "a".repeat (common.maxValidLength (userValidationFields, 'screen_name') + 1),
+			email: "a".repeat (common.maxValidLength (userValidationFields, 'email') + 1) + "@mail.com",
+			password: "a".repeat (common.maxValidLength (userValidationFields, 'password') + 1) };
 
 		const valid_params = {
 			screen_name: 'screen_name',

@@ -2,6 +2,7 @@ const express = require ('express');
 
 const router = express.Router ();
 
+const { CommentModel } = require ('../models/comment');
 const { validatePostID } = require ('../validations/post-validation');
 const { writeValidation } = require ('../validations/comment-validation');
 const { jwtAuth } = require ('../auth/jwt');

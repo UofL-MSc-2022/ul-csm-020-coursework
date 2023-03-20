@@ -115,24 +115,28 @@ describe ("comment test suite", function () {
 					}
 				}
 			});
+
+			it ("valid parameters", async function () {
+				for (const user_posts of this.valid_user_post_map) {
+					const auth_header = {headers: common.createTokenHeader (user_posts.user.id)};
+
+					for (const post of user_posts.posts) {
+						const end_point = create_end_point + '/' + post.id;
+
+						await axios.post (end_point, valid_params, auth_header)
+							.then (function (response) {
+								expect (response.status).toBe (200);
+								expect (response.data ['post']).toBe (post.id);
+								expect (response.data ['author']).toBe (user_posts.user.id);
+							});
+					}
+				}
+			});
 		});
 	});
 });
 
 			/*
-			it ("valid parameters", async function () {
-				for (const user of this.test_users) {
-					const req_config = {headers: common.createTokenHeader (user.id)};
-
-					await axios.post (create_end_point, valid_params, req_config)
-						.then (function (response) {
-							expect (response.status).toBe (200);
-							expect (response.data ['owner']).toBe (user.id);
-						});
-				}
-			});
-		});
-
 		describe ("read tests", function () {
 			beforeEach (async function () { this.test_posts = await common.reloadTestPosts (this.test_users); });
 

@@ -115,6 +115,8 @@ async function createTestPosts () {
 		i += j;
 	}
 
+	await PostModel.populate (test_posts, {path: 'owner', model: UserModel});
+
 	return test_posts;
 }
 

@@ -19,13 +19,6 @@ describe ("comment test suite", function () {
 	beforeEach (async function () {
 		this.test_users = await common.reloadTestUsers ();
 		this.test_posts = await common.reloadTestPosts ();
-
-		this.valid_user_post_map = [];
-		for (const user of this.test_users)
-			this.valid_user_post_map.push ({
-				user: user,
-				posts: await PostModel.find ({ owner: { $ne: user } })});
-
 		this.test_comments = await common.reloadTestComments ();
 	});
 
@@ -57,7 +50,7 @@ describe ("comment test suite", function () {
 	it ("wrong user", async function () {
 		// Create test
 		for (const post of this.test_posts) {
-			const auth_header = common.createTokenHeader (post.owner);
+			const auth_header = {headers: common.createTokenHeader (post.owner)};
 			const end_point = create_end_point + '/' + post.id;
 
 			await axios.post (end_point, valid_params, auth_header)
@@ -115,11 +108,14 @@ describe ("comment test suite", function () {
 			beforeEach (common.deleteTestComments);
 
 			it ("missing parameters", async function () {
-				for (const user_posts of this.valid_user_post_map) {
-					const auth_header = {headers: common.createTokenHeader (user_posts.user.id)};
+				for (const post of this.test_posts) {
+					const end_point = create_end_point + '/' + post.id;
 
-					for (const post of user_posts.posts) {
-						const end_point = create_end_point + '/' + post.id;
+					for (const user of this.test_users) {
+						if (user.id == post.owner.id)
+							continue;
+
+						const auth_header = {headers: common.createTokenHeader (user.id)};
 
 						await axios.post (end_point, {}, auth_header)
 							.then (function (response) {
@@ -137,11 +133,14 @@ describe ("comment test suite", function () {
 					{ body: min_params.body },
 					{ body: max_params.body } ];
 
-				for (const user_posts of this.valid_user_post_map) {
-					const auth_header = {headers: common.createTokenHeader (user_posts.user.id)};
+				for (const post of this.test_posts) {
+					const end_point = create_end_point + '/' + post.id;
 
-					for (const post of user_posts.posts) {
-						const end_point = create_end_point + '/' + post.id;
+					for (const user of this.test_users) {
+						if (user.id == post.owner.id)
+							continue;
+
+						const auth_header = {headers: common.createTokenHeader (user.id)};
 
 						for (const params of test_params)
 							await axios.post (end_point, params, auth_header)
@@ -156,17 +155,20 @@ describe ("comment test suite", function () {
 			});
 
 			it ("valid parameters", async function () {
-				for (const user_posts of this.valid_user_post_map) {
-					const auth_header = {headers: common.createTokenHeader (user_posts.user.id)};
+				for (const post of this.test_posts) {
+					const end_point = create_end_point + '/' + post.id;
 
-					for (const post of user_posts.posts) {
-						const end_point = create_end_point + '/' + post.id;
+					for (const user of this.test_users) {
+						if (user.id == post.owner.id)
+							continue;
+
+						const auth_header = {headers: common.createTokenHeader (user.id)};
 
 						await axios.post (end_point, valid_params, auth_header)
 							.then (function (response) {
 								expect (response.status).toBe (200);
 								expect (response.data ['post']).toBe (post.id);
-								expect (response.data ['author']).toBe (user_posts.user.id);
+								expect (response.data ['author']).toBe (user.id);
 							})
 							.catch (function (error) {
 								expect (true).toBe (false);

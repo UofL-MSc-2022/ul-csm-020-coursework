@@ -3,6 +3,8 @@ const express = require ('express');
 const router = express.Router ();
 
 const { LikeModel } = require ('../models/like');
+const { PostModel } = require ('../models/post');
+const { UserModel } = require ('../models/user');
 const { validatePostID, verifyNotPostOwner } = require ('../validations/post-validation');
 const { validateLikeID } = require ('../validations/like-validation');
 const { jwtAuth } = require ('../auth/jwt');
@@ -26,6 +28,22 @@ router.post ('/create/:post_id', jwtAuth, validatePostID, verifyNotPostOwner, as
 router.delete ('/delete/:like_id', jwtAuth, validateLikeID, verifyLikeBacker, async (req, res) => {
 	try {
 		res.send (await LikeModel.deleteOne ({_id: req.like.id}));
+	}
+	catch (err) {
+		res.status (400).send ({ message: err });
+	}
+});
+
+router.get ('/list/all', jwtAuth, async (req, res) => {
+	try {
+		const likes = await LikeModel.find ()
+			.sort ({date: 1})
+			.populate (
+				[
+					{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},
+					{path: 'backer', model: UserModel} ]);
+
+		res.send (likes);
 	}
 	catch (err) {
 		res.status (400).send ({ message: err });

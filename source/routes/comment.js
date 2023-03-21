@@ -72,15 +72,13 @@ router.patch ('/update/:comment_id', jwtAuth, validateCommentID, verifyCommentAu
 	}
 });
 
-/*
-router.delete ('/delete/:post_id', jwtAuth, validatePostID, verifyPostOwner, async (req, res) => {
+router.delete ('/delete/:comment_id', jwtAuth, validateCommentID, verifyCommentAuthor, async (req, res) => {
 	try {
-		res.send (await PostModel.deleteOne ({_id: req.post.id}));
+		res.send (await CommentModel.deleteOne ({_id: req.comment.id}));
 	}
 	catch (err) {
 		res.status (400).send ({ message: err });
 	}
 });
-*/
 
 module.exports = router;

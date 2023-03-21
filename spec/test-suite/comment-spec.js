@@ -11,6 +11,7 @@ describe ("comment test suite", function () {
 	const create_end_point = end_point_base + '/create';
 	const read_end_point = end_point_base + '/read';
 	const update_end_point = end_point_base + '/update';
+	const delete_end_point = end_point_base + '/delete';
 
 	const valid_params = { body: 'body' };
 
@@ -38,7 +39,10 @@ describe ("comment test suite", function () {
 				url: read_end_point + '/DEADBEEF' },
 			{
 				method: 'patch',
-				url: update_end_point + '/DEADBEEF' } ];
+				url: update_end_point + '/DEADBEEF' },
+			{
+				method: 'delete',
+				url: delete_end_point + '/DEADBEEF' } ];
 
 		for (const end_point of end_points)
 			await axios ({method: end_point.method, url: end_point.url})
@@ -71,7 +75,11 @@ describe ("comment test suite", function () {
 				{
 					method: 'patch',
 					end_point: update_end_point + '/' + comment.id,
-					params: valid_params } ];
+					params: valid_params },
+				{
+					method: 'delete',
+					end_point: delete_end_point + '/' + comment.id,
+					params: {} } ];
 
 			for (const user of this.test_users) {
 				if (user.id == comment.author.id)
@@ -269,90 +277,31 @@ describe ("comment test suite", function () {
 						});
 				}
 			});
-
-			/* Note: This spec makes 18 requests (6 test posts, 3 parameter
-			 * configurations per post) of the test deployment and requires
-			 * longer than the default 5000 ms to complete.
-			it ("valid parameters", async function () {
-				const test_params = {
-					first_title_change: { title: 'first_title_change' },
-					first_body_change: { body: 'first_body_change' },
-					second_change: { title: 'second_title_change', body: 'second_body_change' } };
-
-				for (const post of this.test_posts) {
-					const original_body = post.body;
-
-					const end_point = update_end_point + '/' + post.id;
-					const req_config = {headers: common.createTokenHeader (post.owner)};
-
-					// First title change
-					await axios.patch (end_point, test_params.first_title_change, req_config)
-						.then (function (response) {
-							expect (response.status).toBe (200);
-
-							const updated_post = response.data;
-
-							expect (updated_post.title).toBe (test_params.first_title_change.title);
-							expect (updated_post.body).toBe (original_body);
-						});
-
-					// First body change (title already changed)
-					await axios.patch (end_point, test_params.first_body_change, req_config)
-						.then (function (response) {
-							expect (response.status).toBe (200);
-
-							const updated_post = response.data;
-
-							expect (updated_post.title).toBe (test_params.first_title_change.title);
-							expect (updated_post.body).toBe (test_params.first_body_change.body);
-						});
-
-					// Second change (both parameters changed)
-					await axios.patch (end_point, test_params.second_change, req_config)
-						.then (function (response) {
-							expect (response.status).toBe (200);
-
-							const updated_post = response.data;
-
-							expect (updated_post.title).toBe (test_params.second_change.title);
-							expect (updated_post.body).toBe (test_params.second_change.body);
-						});
-				}
-			}, 10000 /* Override default jasmine spec timeout); */
 		});
-	});
-});
-/*
+
 		describe ("delete tests", function () {
-			beforeEach (async function () { this.test_posts = await common.reloadTestPosts (this.test_users); });
+			beforeEach (async function () { this.test_comments = await common.reloadTestComments (); });
 
-			it ("wrong user", async function () {
-				for (const user of this.test_users) {
-					const posts = await PostModel.find ({ owner: { $ne: user } });
+			it ("missing parameters", async function () {
+				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
 
-					for (const post of posts) {
-						const end_point = delete_end_point + '/' + post.id;
-						const req_config = {headers: common.createTokenHeader (user.id)};
-
-						await axios.delete (end_point, valid_params, req_config)
-							.then (function (response) {
-								expect (true).toBe (false);
-							})
-							.catch (function (error) {
-								expect (error.response.status).toBe (401);
-							});
-					}
-				}
+				await axios.delete (delete_end_point, auth_header)
+					.then (function (response) {
+						expect (true).toBe (false);
+					})
+					.catch (function (error) {
+						expect (error.response.status).toBe (404);
+					});
 			});
 
 			it ("invalid parameters", async function () {
-				const req_config = {headers: common.createTokenHeader (this.test_users [0].id)};
+				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
 				const end_points = [
 					delete_end_point + '/DEADBEEF', // Malformed ObjectID
 					delete_end_point + '/12345678DEADBEEF98765432' ]; // Nonexistent ObjectID
 
 				for (end_point of end_points)
-					await axios.delete (end_point, req_config)
+					await axios.delete (end_point, auth_header)
 						.then (function (response) {
 							expect (true).toBe (false);
 						})
@@ -362,15 +311,20 @@ describe ("comment test suite", function () {
 			});
 
 			it ("valid parameters", async function () {
-				for (const post of this.test_posts) {
-					const req_config = {headers: common.createTokenHeader (post.owner)};
-					const end_point = delete_end_point + '/' + post.id;
+				for (const comment of this.test_comments) {
+					const auth_header = {headers: common.createTokenHeader (comment.author)};
+					const end_point = delete_end_point + '/' + comment.id;
 
-					await axios.delete (end_point, req_config)
+					await axios.delete (end_point, auth_header)
 						.then (function (response) {
 							expect (response.status).toBe (200);
 							expect (response.data.deletedCount).toBe (1);
+						})
+						.catch (function (error) {
+							expect (true).toBe (false);
 						});
 				}
 			});
-*/
+		});
+	});
+});

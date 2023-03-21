@@ -1,6 +1,7 @@
 const axios = require ("axios");
 
 const common = require ('../support/common');
+const { LikeModel } = require ('../../source/models/like');
 
 common.initTestSuite ();
 
@@ -158,8 +159,11 @@ describe ("like test suite", function () {
 			const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
 
 			await axios.get (list_all_end_point, auth_header)
-				.then (function (response) {
+				.then (async function (response) {
 					expect (response.status).toBe (200);
+
+					const n_expected = await LikeModel.countDocuments ();
+					expect (response.data.length).toBe (n_expected);
 
 					var t_0 = new Date (response.data [0].date);
 

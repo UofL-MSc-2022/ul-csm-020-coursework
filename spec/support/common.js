@@ -6,6 +6,7 @@ const VerboseReporter = require ('./verbose-reporter');
 const { UserModel, createUser } = require ('../../source/models/user');
 const { PostModel } = require ('../../source/models/post');
 const { CommentModel } = require ('../../source/models/comment');
+const { LikeModel } = require ('../../source/models/like');
 const { createAccessToken } = require ('../../source/auth/jwt');
 
 const TEST_APP_BASE_URL = "http://localhost:3000"
@@ -192,6 +193,37 @@ async function reloadTestComments () {
 	return await createTestComments ();
 }
 
+async function deleteTestLikes () {
+	delete_response = await LikeModel.deleteMany ();
+
+	if (config.get ('verbose_testing'))
+		console.log ("likes collection cleared, " + delete_response.deletedCount + " removed");
+}
+
+async function createTestLikes () {
+	const test_users = await UserModel.find ();
+	const test_posts = await PostModel.find ().populate ({path: 'owner', model: UserModel});
+
+	var test_likes = [];
+	for (const post of test_posts) {
+		for (const user of test_users) {
+			if (user.id == post.owner.id)
+				continue;
+
+			test_likes.push (await LikeModel.create ({post: post, backer: user}));
+		}
+	}
+
+	await LikeModel.populate (test_likes, {path: 'backer', model: UserModel});
+
+	return test_likes;
+}
+
+async function reloadTestLikes () {
+	await deleteTestLikes ();
+	return await createTestLikes ();
+}
+
 module.exports.TEST_APP_BASE_URL = TEST_APP_BASE_URL
 module.exports.initTestSuite = initTestSuite
 module.exports.connectToTestDB = connectToTestDB
@@ -206,3 +238,6 @@ module.exports.reloadTestPosts = reloadTestPosts
 module.exports.deleteTestComments = deleteTestComments
 module.exports.createTestComments = createTestComments
 module.exports.reloadTestComments = reloadTestComments
+module.exports.deleteTestLikes = deleteTestLikes
+module.exports.createTestLikes = createTestLikes
+module.exports.reloadTestLikes = reloadTestLikes

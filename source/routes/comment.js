@@ -3,16 +3,9 @@ const express = require ('express');
 const router = express.Router ();
 
 const { CommentModel } = require ('../models/comment');
-const { validatePostID } = require ('../validations/post-validation');
+const { validatePostID, verifyNotPostOwner } = require ('../validations/post-validation');
 const { writeValidation, validateCommentID } = require ('../validations/comment-validation');
 const { jwtAuth } = require ('../auth/jwt');
-
-function verifyNotPostOwner (req, res, next) {
-	if (req.post.owner.id == req.user.id)
-		return res.status (401).send ({message: "Signed in user is the post owner"});
-
-	next ();
-}
 
 function verifyCommentAuthor (req, res, next) {
 	if (req.comment.author.id != req.user.id)

@@ -31,6 +31,14 @@ async function validatePostID (req, res, next) {
 	}
 }
 
+function verifyNotPostOwner (req, res, next) {
+	if (req.post.owner.id == req.user.id)
+		return res.status (401).send ({message: "Signed in user is the post owner"});
+
+	next ();
+}
+
 module.exports.createValidation = createValidation;
 module.exports.updateValidation = updateValidation;
 module.exports.validatePostID = validatePostID;
+module.exports.verifyNotPostOwner = verifyNotPostOwner;

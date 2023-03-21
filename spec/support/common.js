@@ -12,8 +12,15 @@ const { createAccessToken } = require ('../../source/auth/jwt');
 const TEST_APP_BASE_URL = "http://localhost:3000"
 
 function initTestSuite () {
-	if (config.get ('verbose_testing'))
-		jasmine.getEnv ().addReporter (VerboseReporter);
+	jasmine_env = jasmine.getEnv ();
+
+	if (! jasmine_env.hasOwnProperty ('verbose_reporter_added'))
+		jasmine_env.verbose_reporter_added = false;
+
+	if (config.get ('verbose_testing') && ! jasmine_env.verbose_reporter_added) {
+		jasmine_env.addReporter (VerboseReporter);
+		jasmine_env.verbose_reporter_added = true;
+	}
 
 	jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 }

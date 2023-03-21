@@ -292,14 +292,26 @@ describe ("post test suite", function () {
 		});
 
 		describe ("delete tests", function () {
+			it ("missing parameters", async function () {
+				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
+
+				await axios.delete (delete_end_point, auth_header)
+					.then (function (response) {
+						expect (true).toBe (false);
+					})
+					.catch (function (error) {
+						expect (error.response.status).toBe (404);
+					});
+			});
+
 			it ("invalid parameters", async function () {
-				const req_config = {headers: common.createTokenHeader (this.test_users [0].id)};
+				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
 				const end_points = [
 					delete_end_point + '/DEADBEEF', // Malformed ObjectID
 					delete_end_point + '/12345678DEADBEEF98765432' ]; // Nonexistent ObjectID
 
 				for (end_point of end_points)
-					await axios.delete (end_point, req_config)
+					await axios.delete (end_point, auth_header)
 						.then (function (response) {
 							expect (true).toBe (false);
 						})
@@ -309,11 +321,11 @@ describe ("post test suite", function () {
 			});
 
 			it ("valid parameters", async function () {
-				for (const post of this.test_posts) {
-					const req_config = {headers: common.createTokenHeader (post.owner)};
+				for (const post of await this.test_posts) {
+					const auth_header = {headers: common.createTokenHeader (post.owner)};
 					const end_point = delete_end_point + '/' + post.id;
 
-					await axios.delete (end_point, req_config)
+					await axios.delete (end_point, auth_header)
 						.then (function (response) {
 							expect (response.status).toBe (200);
 							expect (response.data.deletedCount).toBe (1);

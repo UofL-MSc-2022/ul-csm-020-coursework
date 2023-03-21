@@ -7,13 +7,6 @@ const { validatePostID } = require ('../validations/post-validation');
 const { writeValidation, validateCommentID } = require ('../validations/comment-validation');
 const { jwtAuth } = require ('../auth/jwt');
 
-/*
-const { UserModel } = require ('../models/user');
-const { PostModel } = require ('../models/post');
-const { createValidation, updateValidation } = require ('../validations/post-validation');
-const { jwtAuth } = require ('../auth/jwt');
-*/
-
 function verifyNotPostOwner (req, res, next) {
 	if (req.post.owner.id == req.user.id)
 		return res.status (401).send ({message: "Signed in user is the post owner"});

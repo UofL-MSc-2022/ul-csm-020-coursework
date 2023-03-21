@@ -2,6 +2,7 @@ const express = require ('express');
 
 const router = express.Router ();
 
+const { LikeModel } = require ('../models/like');
 const { validatePostID, verifyNotPostOwner } = require ('../validations/post-validation');
 const { jwtAuth } = require ('../auth/jwt');
 

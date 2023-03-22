@@ -2,12 +2,15 @@ const express = require ('express');
 
 const router = express.Router ();
 
+const { UserModel } = require ('../models/user');
 const { PostModel } = require ('../models/post');
+const { CommentModel } = require ('../models/comment');
+const { LikeModel } = require ('../models/like');
 const { createValidation, updateValidation, validatePostID } = require ('../validations/post-validation');
 const { jwtAuth } = require ('../auth/jwt');
 
 function verifyPostOwner (req, res, next) {
-	if (req.post.owner.id != req.user.id)
+	if (req.post.owner.toString () != req.user.id)
 		return res.status (401).send ({message: "Signed in user is not the post owner"});
 
 	next ();
@@ -33,8 +36,17 @@ router.post ('/create', jwtAuth, async (req, res) => {
 	}
 });
 
-router.get ('/read/:post_id', jwtAuth, validatePostID, (req, res) => {
+router.get ('/read/:post_id', jwtAuth, validatePostID, async (req, res) => {
 	try {
+		req.post.comments = await CommentModel.find ({post: req.post});
+		req.post.likes = await LikeModel.find ({post: req.post});
+		req.post.n_likes = req.post.likes.length;
+
+		await req.post.populate ([
+			{path: 'owner', model: UserModel},
+			{path: 'comments', model: CommentModel, populate: {path: 'author', model: UserModel}},
+			{path: 'likes', model: LikeModel, populate: {path: 'backer', model: UserModel}} ]);
+
 		res.send (req.post);
 	}
 	catch (err) {

@@ -196,7 +196,7 @@ describe ("post test suite", function () {
 			it ("missing parameters", async function () {
 				for (const post of this.test_posts) {
 					const end_point = update_end_point + '/' + post.id;
-					const req_config = {headers: common.createTokenHeader (post.owner)};
+					const req_config = {headers: common.createTokenHeader (post.owner.id)};
 
 					await axios.patch (end_point, {}, req_config)
 						.then (function (response) {
@@ -335,6 +335,17 @@ describe ("post test suite", function () {
 						});
 				}
 			});
+		});
+	});
+
+	describe ("fixture", function () {
+		xit ("load", function () {
+			await common.reloadTestUsers ();
+			await common.reloadTestPosts ();
+			await common.reloadTestComments ();
+			await common.reloadTestLikes ();
+
+			expect (true).toBe (true);
 		});
 	});
 });

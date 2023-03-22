@@ -19,7 +19,7 @@ const updateValidation = (data) => {
 
 async function validatePostID (req, res, next) {
 	try {
-		req.post = await PostModel.findById (req.params.post_id).populate ({path: 'owner', model: UserModel});
+		req.post = await PostModel.findById (req.params.post_id);
 
 		if (! req.post)
 			return res.status (400).send ({message: "No post with id " + req.params.post_id});
@@ -32,7 +32,7 @@ async function validatePostID (req, res, next) {
 }
 
 function verifyNotPostOwner (req, res, next) {
-	if (req.post.owner.id == req.user.id)
+	if (req.post.owner.toString () == req.user.id)
 		return res.status (401).send ({message: "Signed in user is the post owner"});
 
 	next ();

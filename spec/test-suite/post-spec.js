@@ -339,7 +339,7 @@ describe ("post test suite", function () {
 	});
 
 	describe ("fixture", function () {
-		xit ("load", function () {
+		xit ("load", async function () {
 			await common.reloadTestUsers ();
 			await common.reloadTestPosts ();
 			await common.reloadTestComments ();

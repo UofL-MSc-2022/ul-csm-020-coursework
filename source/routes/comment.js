@@ -2,6 +2,8 @@ const express = require ('express');
 
 const router = express.Router ();
 
+const { UserModel } = require ('../models/user');
+const { PostModel } = require ('../models/post');
 const { CommentModel } = require ('../models/comment');
 const { validatePostID, verifyNotPostOwner } = require ('../validations/post-validation');
 const { writeValidation, validateCommentID } = require ('../validations/comment-validation');
@@ -61,6 +63,26 @@ router.patch ('/update/:comment_id', jwtAuth, validateCommentID, verifyCommentAu
 router.delete ('/delete/:comment_id', jwtAuth, validateCommentID, verifyCommentAuthor, async (req, res) => {
 	try {
 		res.send (await CommentModel.deleteOne ({_id: req.comment.id}));
+	}
+	catch (err) {
+		res.status (400).send ({ message: err });
+	}
+});
+
+router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
+	try {
+		var filter = {};
+		if (req.params.scope == 'user')
+			filter = {author: req.user.id};
+
+		const comments = await CommentModel.find (filter)
+			.sort ({date: 1})
+			.populate (
+				[
+					{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},
+					{path: 'author', model: UserModel} ]);
+
+		res.send (comments);
 	}
 	catch (err) {
 		res.status (400).send ({ message: err });

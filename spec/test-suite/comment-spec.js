@@ -1,7 +1,7 @@
 const axios = require ("axios");
 
 const common = require ('../support/common');
-const { commentValidationFields } = require ('../../source/models/comment');
+const { CommentModel, commentValidationFields } = require ('../../source/models/comment');
 const { PostModel } = require ('../../source/models/post');
 
 common.initTestSuite ();
@@ -12,6 +12,7 @@ describe ("comment test suite", function () {
 	const read_end_point = end_point_base + '/read';
 	const update_end_point = end_point_base + '/update';
 	const delete_end_point = end_point_base + '/delete';
+	const list_end_point = end_point_base + '/list';
 
 	const valid_params = { body: 'body' };
 
@@ -35,7 +36,13 @@ describe ("comment test suite", function () {
 				url: update_end_point + '/DEADBEEF' },
 			{
 				method: 'delete',
-				url: delete_end_point + '/DEADBEEF' } ];
+				url: delete_end_point + '/DEADBEEF' },
+			{
+				method: 'get',
+				url: list_end_point + '/all' },
+			{
+				method: 'get',
+				url: list_end_point + '/user' } ];
 
 		for (const end_point of end_points)
 			await axios ({method: end_point.method, url: end_point.url})
@@ -47,8 +54,7 @@ describe ("comment test suite", function () {
 				});
 	});
 
-	it ("wrong user", async function () {
-		// Create test
+	it ("wrong user, create", async function () {
 		for (const post of this.test_posts) {
 			const auth_header = {headers: common.createTokenHeader (post.owner)};
 			const end_point = create_end_point + '/' + post.id;
@@ -61,8 +67,9 @@ describe ("comment test suite", function () {
 					expect (error.response.status).toBe (401);
 				});
 		}
+	});
 
-		// Update and delete tests
+	it ("wrong user, update and delete", async function () {
 		for (const comment of this.test_comments) {
 			const requests = [
 				{
@@ -327,6 +334,68 @@ describe ("comment test suite", function () {
 						});
 				}
 			});
+		});
+	});
+
+	describe ("list tests", function () {
+		beforeAll (function () {
+			jasmine.addMatchers ({ toHaveAscendingDates: common.ascendingDatesMatcher });
+		});
+
+		beforeEach (async function () { this.test_likes = await common.reloadTestLikes (); });
+
+		it ("invalid scope", async function () {
+			const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
+			const end_point = list_end_point + '/asdf';
+
+			await axios.get (end_point, auth_header)
+				.then (function (response) {
+					expect (true).toBe (false);
+				})
+				.catch (function (error) {
+					expect (error.response.status).toBe (404);
+				});
+		});
+
+		it ("all scope", async function () {
+			const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
+			const end_point = list_end_point + '/all';
+
+			await axios.get (end_point, auth_header)
+				.then (async function (response) {
+					expect (response.status).toBe (200);
+
+					const n_expected = await CommentModel.countDocuments ();
+					expect (response.data.length).toBe (n_expected);
+
+					expect (response.data).toHaveAscendingDates ();
+				})
+				.catch (function (error) {
+					expect (true).toBe (false);
+				});
+		});
+
+		it ("user scope", async function () {
+			const end_point = list_end_point + '/user';
+
+			for (const user of this.test_users) {
+				const auth_header = {headers: common.createTokenHeader (user.id)};
+
+				await axios.get (end_point, auth_header)
+					.then (async function (response) {
+						expect (response.status).toBe (200);
+
+						const n_expected = await CommentModel.countDocuments ({author: user});
+						expect (response.data.length).toBe (n_expected);
+
+						console.log (n_expected);
+
+						expect (response.data).toHaveAscendingDates ();
+					})
+					.catch (function (error) {
+						expect (true).toBe (false);
+					});
+			}
 		});
 	});
 });

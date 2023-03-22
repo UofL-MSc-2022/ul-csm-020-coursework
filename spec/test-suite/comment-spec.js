@@ -339,7 +339,7 @@ describe ("comment test suite", function () {
 
 	describe ("list tests", function () {
 		beforeAll (function () {
-			jasmine.addMatchers ({ toHaveAscendingDates: common.ascendingDatesMatcher });
+			jasmine.addMatchers ({ toHaveAscendingCreationTimes: common.ascendingCreationTimesMatcher });
 		});
 
 		beforeEach (async function () { this.test_likes = await common.reloadTestLikes (); });
@@ -368,7 +368,7 @@ describe ("comment test suite", function () {
 					const n_expected = await CommentModel.countDocuments ();
 					expect (response.data.length).toBe (n_expected);
 
-					expect (response.data).toHaveAscendingDates ();
+					expect (response.data).toHaveAscendingCreationTimes ();
 				})
 				.catch (function (error) {
 					expect (true).toBe (false);
@@ -388,7 +388,7 @@ describe ("comment test suite", function () {
 						const n_expected = await CommentModel.countDocuments ({author: user});
 						expect (response.data.length).toBe (n_expected);
 
-						expect (response.data).toHaveAscendingDates ();
+						expect (response.data).toHaveAscendingCreationTimes ();
 					})
 					.catch (function (error) {
 						expect (true).toBe (false);

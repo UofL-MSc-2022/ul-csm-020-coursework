@@ -231,14 +231,14 @@ async function reloadTestLikes () {
 	return await createTestLikes ();
 }
 
-function ascendingDatesMatcher (matchersUtil) {
+function ascendingCreationTimesMatcher (matchersUtil) {
 	return {
 		compare: function (object_array, _) {
 			var result = {pass: true};
 
-			var t_0 = new Date (object_array [0].date);
+			var t_0 = new Date (object_array [0].createdAt);
 			for (var i = 1; i < object_array.length; i++) {
-				var t_1 = new Date (object_array [i].date);
+				var t_1 = new Date (object_array [i].createdAt);
 
 				if (t_1 < t_0) {
 					result.pass = false;
@@ -275,4 +275,4 @@ module.exports.reloadTestComments = reloadTestComments;
 module.exports.deleteTestLikes = deleteTestLikes;
 module.exports.createTestLikes = createTestLikes;
 module.exports.reloadTestLikes = reloadTestLikes;
-module.exports.ascendingDatesMatcher = ascendingDatesMatcher;
+module.exports.ascendingCreationTimesMatcher = ascendingCreationTimesMatcher;

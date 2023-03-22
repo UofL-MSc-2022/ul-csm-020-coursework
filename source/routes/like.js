@@ -41,7 +41,7 @@ router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 			filter = {backer: req.user.id};
 
 		const likes = await LikeModel.find (filter)
-			.sort ({date: 1})
+			.sort ({createdAt: 1})
 			.populate (
 				[
 					{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},

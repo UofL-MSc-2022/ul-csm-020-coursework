@@ -80,7 +80,7 @@ router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 			filter = {author: req.user.id};
 
 		const comments = await CommentModel.find (filter)
-			.sort ({date: 1})
+			.sort ({createdAt: 1})
 			.populate (
 				[
 					{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},

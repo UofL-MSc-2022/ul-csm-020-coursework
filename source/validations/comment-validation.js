@@ -13,10 +13,7 @@ const writeValidation = (data) => {
 
 async function validateCommentID (req, res, next) {
 	try {
-		req.comment = await CommentModel.findById (req.params.comment_id)
-			.populate ([
-				{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},
-				{path: 'author', model: UserModel} ]);
+		req.comment = await CommentModel.findById (req.params.comment_id);
 
 		if (! req.comment)
 			return res.status (400).send ({message: "No comment with id " + req.params.comment_id});

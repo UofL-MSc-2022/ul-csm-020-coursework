@@ -10,7 +10,7 @@ const { writeValidation, validateCommentID } = require ('../validations/comment-
 const { jwtAuth } = require ('../auth/jwt');
 
 function verifyCommentAuthor (req, res, next) {
-	if (req.comment.author.id != req.user.id)
+	if (req.comment.author.toString () != req.user.id)
 		return res.status (401).send ({message: "Signed in user is not the comment author"});
 
 	next ();
@@ -34,8 +34,12 @@ router.post ('/create/:post_id', jwtAuth, validatePostID, verifyNotPostOwner, as
 	}
 });
 
-router.get ('/read/:comment_id', jwtAuth, validateCommentID, (req, res) => {
+router.get ('/read/:comment_id', jwtAuth, validateCommentID, async (req, res) => {
 	try {
+		await req.comment.populate ([
+			{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},
+			{path: 'author', model: UserModel} ]);
+
 		res.send (req.comment);
 	}
 	catch (err) {

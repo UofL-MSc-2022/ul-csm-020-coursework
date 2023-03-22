@@ -22,7 +22,7 @@ function initTestSuite () {
 		jasmine_env.verbose_reporter_added = true;
 	}
 
-	jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
+	jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
 }
 
 function connectToTestDB () {

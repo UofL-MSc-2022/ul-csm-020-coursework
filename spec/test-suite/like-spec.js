@@ -185,34 +185,7 @@ describe ("like test suite", function () {
 
 	describe ("list tests", function () {
 		beforeAll (function () {
-			jasmine.addMatchers ({
-				toHaveAscendingDates: function (matchersUtil) {
-					return {
-						compare: function (object_array, _) {
-							var result = {pass: true};
-
-							var t_0 = new Date (object_array [0].date);
-							for (var i = 1; i < object_array.length; i++) {
-								var t_1 = new Date (object_array [i].date);
-
-								if (t_1 < t_0) {
-									result.pass = false;
-									break;
-								}
-
-								t_0 = t_1;
-							}
-
-							if (result.pass)
-								result.message = "Dates are ascending";
-							else
-								result.message = "Dates are not ascending";
-
-							return result;
-						}
-					};
-				}
-			});
+			jasmine.addMatchers ({ toHaveAscendingDates: common.ascendingDatesMatcher });
 		});
 
 		beforeEach (async function () { this.test_likes = await common.reloadTestLikes (); });

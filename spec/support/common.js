@@ -231,20 +231,48 @@ async function reloadTestLikes () {
 	return await createTestLikes ();
 }
 
-module.exports.TEST_APP_BASE_URL = TEST_APP_BASE_URL
-module.exports.initTestSuite = initTestSuite
-module.exports.connectToTestDB = connectToTestDB
-module.exports.maxValidLength = maxValidLength
-module.exports.deleteTestUsers = deleteTestUsers
-module.exports.createTestUsers = createTestUsers
-module.exports.reloadTestUsers = reloadTestUsers
-module.exports.createTokenHeader = createTokenHeader
-module.exports.deleteTestPosts = deleteTestPosts
-module.exports.createTestPosts = createTestPosts
-module.exports.reloadTestPosts = reloadTestPosts
-module.exports.deleteTestComments = deleteTestComments
-module.exports.createTestComments = createTestComments
-module.exports.reloadTestComments = reloadTestComments
-module.exports.deleteTestLikes = deleteTestLikes
-module.exports.createTestLikes = createTestLikes
-module.exports.reloadTestLikes = reloadTestLikes
+function ascendingDatesMatcher (matchersUtil) {
+	return {
+		compare: function (object_array, _) {
+			var result = {pass: true};
+
+			var t_0 = new Date (object_array [0].date);
+			for (var i = 1; i < object_array.length; i++) {
+				var t_1 = new Date (object_array [i].date);
+
+				if (t_1 < t_0) {
+					result.pass = false;
+					break;
+				}
+
+				t_0 = t_1;
+			}
+
+			if (result.pass)
+				result.message = "Dates are ascending";
+			else
+				result.message = "Dates are not ascending";
+
+			return result;
+		}
+	};
+}
+
+module.exports.TEST_APP_BASE_URL = TEST_APP_BASE_URL;
+module.exports.initTestSuite = initTestSuite;
+module.exports.connectToTestDB = connectToTestDB;
+module.exports.maxValidLength = maxValidLength;
+module.exports.deleteTestUsers = deleteTestUsers;
+module.exports.createTestUsers = createTestUsers;
+module.exports.reloadTestUsers = reloadTestUsers;
+module.exports.createTokenHeader = createTokenHeader;
+module.exports.deleteTestPosts = deleteTestPosts;
+module.exports.createTestPosts = createTestPosts;
+module.exports.reloadTestPosts = reloadTestPosts;
+module.exports.deleteTestComments = deleteTestComments;
+module.exports.createTestComments = createTestComments;
+module.exports.reloadTestComments = reloadTestComments;
+module.exports.deleteTestLikes = deleteTestLikes;
+module.exports.createTestLikes = createTestLikes;
+module.exports.reloadTestLikes = reloadTestLikes;
+module.exports.ascendingDatesMatcher = ascendingDatesMatcher;

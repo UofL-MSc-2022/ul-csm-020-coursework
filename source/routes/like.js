@@ -34,9 +34,13 @@ router.delete ('/delete/:like_id', jwtAuth, validateLikeID, verifyLikeBacker, as
 	}
 });
 
-router.get ('/list/all', jwtAuth, async (req, res) => {
+router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 	try {
-		const likes = await LikeModel.find ()
+		var filter = {};
+		if (req.params.scope == 'user')
+			filter = {backer: req.user.id};
+
+		const likes = await LikeModel.find (filter)
 			.sort ({date: 1})
 			.populate (
 				[

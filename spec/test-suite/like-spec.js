@@ -9,7 +9,7 @@ describe ("like test suite", function () {
 	const end_point_base = common.TEST_APP_BASE_URL + '/api/like';
 	const create_end_point = end_point_base + '/create';
 	const delete_end_point = end_point_base + '/delete';
-	const list_all_end_point = end_point_base + '/list/all';
+	const list_end_point = end_point_base + '/list';
 
 	beforeAll (common.connectToTestDB);
 	beforeEach (async function () {
@@ -21,7 +21,16 @@ describe ("like test suite", function () {
 		const end_points = [
 			{
 				method: 'post',
-				url: create_end_point + '/DEADBEEF' } ];
+				url: create_end_point + '/DEADBEEF' },
+			{
+				method: 'delete',
+				url: delete_end_point + '/DEADBEEF' },
+			{
+				method: 'get',
+				url: list_end_point + '/all' },
+			{
+				method: 'get',
+				url: list_end_point + '/user' } ];
 
 		for (const end_point of end_points)
 			await axios ({method: end_point.method, url: end_point.url})
@@ -33,8 +42,7 @@ describe ("like test suite", function () {
 				});
 	});
 
-	it ("wrong user", async function () {
-		// Create test
+	it ("wrong user, create", async function () {
 		for (const post of this.test_posts) {
 			const auth_header = {headers: common.createTokenHeader (post.owner)};
 			const end_point = create_end_point + '/' + post.id;
@@ -46,6 +54,29 @@ describe ("like test suite", function () {
 				.catch (function (error) {
 					expect (error.response.status).toBe (401);
 				});
+		}
+	});
+
+	it ("wrong user, delete", async function () {
+		const test_likes = await common.reloadTestLikes ();
+
+		for (const like of test_likes) {
+			const end_point = delete_end_point + '/' + like.id;
+
+			for (const user of this.test_users) {
+				if (like.backer.id == user.id)
+					continue;
+
+				const auth_header = {headers: common.createTokenHeader (user.id)};
+
+				await axios.delete (end_point, {}, auth_header)
+					.then (function (response) {
+						expect (true).toBe (false);
+					})
+					.catch (function (error) {
+						expect (error.response.status).toBe (401);
+					});
+			}
 		}
 	});
 
@@ -153,31 +184,91 @@ describe ("like test suite", function () {
 	});
 
 	describe ("list tests", function () {
+		beforeAll (function () {
+			jasmine.addMatchers ({
+				toHaveAscendingDates: function (matchersUtil) {
+					return {
+						compare: function (object_array, _) {
+							var result = {pass: true};
+
+							var t_0 = new Date (object_array [0].date);
+							for (var i = 1; i < object_array.length; i++) {
+								var t_1 = new Date (object_array [i].date);
+
+								if (t_1 < t_0) {
+									result.pass = false;
+									break;
+								}
+
+								t_0 = t_1;
+							}
+
+							if (result.pass)
+								result.message = "Dates are ascending";
+							else
+								result.message = "Dates are not ascending";
+
+							return result;
+						}
+					};
+				}
+			});
+		});
+
 		beforeEach (async function () { this.test_likes = await common.reloadTestLikes (); });
 
-		it ("list all", async function () {
+		it ("invalid scope", async function () {
 			const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
+			const end_point = list_end_point + '/asdf';
 
-			await axios.get (list_all_end_point, auth_header)
+			await axios.get (end_point, auth_header)
+				.then (function (response) {
+					expect (true).toBe (false);
+				})
+				.catch (function (error) {
+					expect (error.response.status).toBe (404);
+				});
+		});
+
+		it ("all scope", async function () {
+			const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
+			const end_point = list_end_point + '/all';
+
+			await axios.get (end_point, auth_header)
 				.then (async function (response) {
 					expect (response.status).toBe (200);
 
 					const n_expected = await LikeModel.countDocuments ();
 					expect (response.data.length).toBe (n_expected);
 
-					var t_0 = new Date (response.data [0].date);
-
-					for (var i = 1; i < response.data.length; i++) {
-						var t_1 = new Date (response.data [i].date);
-
-						expect (t_1).toBeGreaterThan (t_0);
-
-						t_0 = t_1;
-					}
+					expect (response.data).toHaveAscendingDates ();
 				})
 				.catch (function (error) {
 					expect (true).toBe (false);
 				});
+		});
+
+		it ("user scope", async function () {
+			const end_point = list_end_point + '/user';
+
+			for (const user of this.test_users) {
+				const auth_header = {headers: common.createTokenHeader (user.id)};
+
+				await axios.get (end_point, auth_header)
+					.then (async function (response) {
+						expect (response.status).toBe (200);
+
+						const n_expected = await LikeModel.countDocuments ({backer: user});
+						expect (response.data.length).toBe (n_expected);
+
+						console.log (n_expected);
+
+						expect (response.data).toHaveAscendingDates ();
+					})
+					.catch (function (error) {
+						expect (true).toBe (false);
+					});
+			}
 		});
 	});
 });

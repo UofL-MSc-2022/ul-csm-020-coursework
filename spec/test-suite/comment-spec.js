@@ -388,8 +388,6 @@ describe ("comment test suite", function () {
 						const n_expected = await CommentModel.countDocuments ({author: user});
 						expect (response.data.length).toBe (n_expected);
 
-						console.log (n_expected);
-
 						expect (response.data).toHaveAscendingDates ();
 					})
 					.catch (function (error) {

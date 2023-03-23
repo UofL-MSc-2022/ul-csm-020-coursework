@@ -11,6 +11,67 @@ const { createAccessToken } = require ('../../source/auth/jwt');
 
 const TEST_APP_BASE_URL = "http://localhost:3000"
 
+const sample_test_data = {
+	users: [
+		{
+			screen_name: "Olga",
+			email: "olga@miniwall.com",
+			password: "olgapass" },
+		{
+			screen_name: "Nick",
+			email: "nick@miniwall.com",
+			password: "nickpass" },
+		{
+			screen_name: "Mary",
+			email: "mary@miniwall.com",
+			password: "marypass" } ],
+
+	posts: [
+		{
+			title: "Immigrant Song",
+			body: "I come from the land of the ice and snow." },
+		{
+			title: "Rebel Girl",
+			body: "That girl thinks she's the queen of the neighborhood." },
+		{
+			title: "Teenage Riot",
+			body: "Everybody's talking about the stormy weather." },
+		{
+			title: "Destination Venus",
+			body: "Twenty million miles of bleakness." },
+		{
+			title: "California Soul",
+			body: "Like a sound you hear that lingers in your ear." },
+		{
+			title: "The Revolution Will Not Be Televised",
+			body: "You will not be able to plug in, turn on and cop out." } ],
+
+	comments: [
+		{body: "In these deep solitudes and awful cells,"},
+		{body: "Where heav'nly-pensive contemplation dwells,"},
+		{body: "And ever-musing melancholy reigns;"},
+		{body: "What means this tumult in a vestal's veins?"},
+		{body: "Why rove my thoughts beyond this last retreat?"},
+		{body: "Why feels my heart its long-forgotten heat?"},
+		{body: "Yet, yet I love!—From Abelard it came,"},
+		{body: "And Eloisa yet must kiss the name."},
+		{body: "Dear fatal name! rest ever unreveal'd,"},
+		{body: "Nor pass these lips in holy silence seal'd."},
+		{body: "Hide it, my heart, within that close disguise,"},
+		{body: "Where mix'd with God's, his lov'd idea lies:"},
+		{body: "O write it not, my hand—the name appears"},
+		{body: "Already written—wash it out, my tears!"},
+		{body: "In vain lost Eloisa weeps and prays,"},
+		{body: "Her heart still dictates, and her hand obeys."},
+		{body: "Relentless walls! whose darksome round contains"},
+		{body: "Repentant sighs, and voluntary pains:"},
+		{body: "Ye rugged rocks! which holy knees have worn;"},
+		{body: "Ye grots and caverns shagg'd with horrid thorn!"},
+		{body: "Shrines! where their vigils pale-ey'd virgins keep,"},
+		{body: "And pitying saints, whose statues learn to weep!"},
+		{body: "Though cold like you, unmov'd, and silent grown,"},
+		{body: "I have not yet forgot myself to stone."} ] };
+
 function initTestSuite () {
 	jasmine_env = jasmine.getEnv ();
 
@@ -45,22 +106,8 @@ async function deleteTestUsers () {
 }
 
 async function createTestUsers () {
-	const test_user_params = [
-		{
-			screen_name: "Olga",
-			email: "olga@miniwall.com",
-			password: "olgapass" },
-		{
-			screen_name: "Nick",
-			email: "nick@miniwall.com",
-			password: "nickpass" },
-		{
-			screen_name: "Mary",
-			email: "mary@miniwall.com",
-			password: "marypass" } ];
-
 	var test_users = [];
-	for (const params of test_user_params) {
+	for (const params of sample_test_data.users) {
 		test_user = await createUser (params.screen_name, params.email, params.password);
 		test_user.password_plain = params.password;
 		test_users.push (test_user);
@@ -86,26 +133,6 @@ async function deleteTestPosts () {
 }
 
 async function createTestPosts () {
-	const test_post_params = [
-		{
-			title: "Immigrant Song",
-			body: "I come from the land of the ice and snow." },
-		{
-			title: "Rebel Girl",
-			body: "That girl thinks she's the queen of the neighborhood." },
-		{
-			title: "Teenage Riot",
-			body: "Everybody's talking about the stormy weather." },
-		{
-			title: "Destination Venus",
-			body: "Twenty million miles of bleakness." },
-		{
-			title: "California Soul",
-			body: "Like a sound you hear that lingers in your ear." },
-		{
-			title: "The Revolution Will Not Be Televised",
-			body: "You will not be able to plug in, turn on and cop out." } ];
-
 	const test_users = await UserModel.find ();
 
 	var test_posts = [];
@@ -113,8 +140,8 @@ async function createTestPosts () {
 	for (const user of test_users) {
 		for (var j = 0; j < 2; j++) {
 			params = {
-				title: test_post_params [i + j].title,
-				body: test_post_params [i + j].body,
+				title: sample_test_data.posts [i + j].title,
+				body: sample_test_data.posts [i + j].body,
 				owner: user };
 
 			test_posts.push (await PostModel.create (params));
@@ -141,32 +168,6 @@ async function deleteTestComments () {
 }
 
 async function createTestComments () {
-	const test_comment_bodies = [
-		"In these deep solitudes and awful cells,",
-		"Where heav'nly-pensive contemplation dwells,",
-		"And ever-musing melancholy reigns;",
-		"What means this tumult in a vestal's veins?",
-		"Why rove my thoughts beyond this last retreat?",
-		"Why feels my heart its long-forgotten heat?",
-		"Yet, yet I love!—From Abelard it came,",
-		"And Eloisa yet must kiss the name.",
-		"Dear fatal name! rest ever unreveal'd,",
-		"Nor pass these lips in holy silence seal'd.",
-		"Hide it, my heart, within that close disguise,",
-		"Where mix'd with God's, his lov'd idea lies:",
-		"O write it not, my hand—the name appears",
-		"Already written—wash it out, my tears!",
-		"In vain lost Eloisa weeps and prays,",
-		"Her heart still dictates, and her hand obeys.",
-		"Relentless walls! whose darksome round contains",
-		"Repentant sighs, and voluntary pains:",
-		"Ye rugged rocks! which holy knees have worn;",
-		"Ye grots and caverns shagg'd with horrid thorn!",
-		"Shrines! where their vigils pale-ey'd virgins keep,",
-		"And pitying saints, whose statues learn to weep!",
-		"Though cold like you, unmov'd, and silent grown,",
-		"I have not yet forgot myself to stone." ];
-
 	const test_users = await UserModel.find ();
 	const test_posts = await PostModel.find ().populate ({path: 'owner', model: UserModel});
 
@@ -180,7 +181,7 @@ async function createTestComments () {
 			for (var j = 0; j < 2; j++) {
 				params = {
 					post: post,
-					body: test_comment_bodies [i + j],
+					body: sample_test_data.comments [i + j].body,
 					author: user };
 
 				test_comments.push (await CommentModel.create (params));
@@ -231,6 +232,58 @@ async function reloadTestLikes () {
 	return await createTestLikes ();
 }
 
+async function loadRandomPostsAndLikes () {
+	const test_users = await UserModel.find ();
+	await deleteTestLikes ();
+	await deleteTestPosts ();
+
+	const min_posts = 15;
+	const min_likes = 45;
+
+	var n_posts = 0;
+	var n_likes = 0;
+
+	var likeable_posts = {};
+	for (user of test_users)
+		likeable_posts [user.id] = [];
+
+	function choose (set) {
+		return set [Math.floor (Math.random () * set.length)];
+	}
+
+	while (n_posts < min_posts || n_likes < min_likes) {
+		const post_user = choose (test_users);
+		const post_data = choose (sample_test_data.posts);
+		const post_params = { title: post_data.title, body: post_data.body, owner: post_user };
+		const post = await PostModel.create (post_params);
+
+		for (user of test_users) {
+			if (user.id == post_user.id)
+				continue;
+
+			likeable_posts [user.id].push (post);
+		}
+
+		n_posts++;
+
+		for (i=0; i<3; i++) {
+			const like_user = choose (test_users);
+			const like_post = choose (likeable_posts [like_user.id]);
+
+			if (! like_post)
+				continue;
+
+			if (like_user.id == like_post.owner.toString ())
+				throw "Can't like own post";
+
+			const like_params = { post: like_post, backer: like_user };
+			await LikeModel.create (like_params);
+
+			n_likes++;
+		}
+	}
+}
+
 function ascendingCreationTimesMatcher (matchersUtil) {
 	return {
 		compare: function (object_array, _) {
@@ -275,4 +328,5 @@ module.exports.reloadTestComments = reloadTestComments;
 module.exports.deleteTestLikes = deleteTestLikes;
 module.exports.createTestLikes = createTestLikes;
 module.exports.reloadTestLikes = reloadTestLikes;
+module.exports.loadRandomPostsAndLikes = loadRandomPostsAndLikes;
 module.exports.ascendingCreationTimesMatcher = ascendingCreationTimesMatcher;

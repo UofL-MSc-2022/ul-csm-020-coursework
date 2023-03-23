@@ -80,4 +80,28 @@ router.delete ('/delete/:post_id', jwtAuth, validatePostID, verifyPostOwner, asy
 	}
 });
 
+router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
+	try {
+		var filter = {};
+		if (req.params.scope == 'user')
+			filter = {owner: req.user._id};
+
+		const posts = await PostModel.aggregate ([
+			{$match: filter},
+			{$lookup: {from: 'likes', localField: '_id', foreignField: 'post', as: 'likes'}},
+			{$set: { n_likes: {$size: '$likes'}}},
+			{$unset: 'likes'},
+			{$sort: {n_likes: -1, createdAt: 1}}
+		]);
+
+		if (req.params.scope != 'user')
+			await PostModel.populate (posts, {path: 'owner', model: UserModel});
+
+		res.send (posts);
+	}
+	catch (err) {
+		res.status (400).send ({ message: err });
+	}
+});
+
 module.exports = router;

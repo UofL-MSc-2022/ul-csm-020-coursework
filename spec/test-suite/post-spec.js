@@ -2,6 +2,8 @@ const axios = require ("axios");
 
 const common = require ('../support/common');
 const { PostModel, postValidationFields } = require ('../../source/models/post');
+const { CommentModel } = require ('../../source/models/comment');
+const { LikeModel } = require ('../../source/models/like');
 
 common.initTestSuite ();
 
@@ -324,14 +326,23 @@ describe ("post test suite", function () {
 			});
 
 			it ("valid parameters", async function () {
+				await common.reloadTestComments ();
+				await common.reloadTestLikes ();
+
 				for (const post of await this.test_posts) {
 					const auth_header = {headers: common.createTokenHeader (post.owner)};
 					const end_point = delete_end_point + '/' + post.id;
 
 					await axios.delete (end_point, auth_header)
-						.then (function (response) {
+						.then (async function (response) {
 							expect (response.status).toBe (200);
 							expect (response.data.deletedCount).toBe (1);
+
+							const n_comments = await CommentModel.countDocuments ({post: post.id});
+							const n_likes = await LikeModel.countDocuments ({post: post.id});
+
+							expect (n_comments).toBe (0);
+							expect (n_likes).toBe (0);
 						})
 						.catch (function (error) {
 							expect (true).toBe (false);

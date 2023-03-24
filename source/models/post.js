@@ -1,6 +1,9 @@
 const mongoose = require ('mongoose');
 const joi = require ('joi');
 
+const { CommentModel } = require ('./comment');
+const { LikeModel } = require ('./like');
+
 const postSchema = mongoose.Schema ({
 	title: { type: String, required: true, min: 3, max: 256 },
 	body: { type: String, required: true, min: 3, max: 1024 },
@@ -15,6 +18,13 @@ const postSchema = mongoose.Schema ({
 		select: false },
 	n_likes: { type: Number, select: false }
 }, {timestamps: true});
+
+postSchema.pre ('deleteOne', async function () {
+	const post_id = this.getFilter ()._id;
+
+	await CommentModel.deleteMany ({post: post_id});
+	await LikeModel.deleteMany ({post: post_id});
+});
 
 const postValidationFields = {
 	title: joi.string ().required ().min (postSchema.obj.title.min).max (postSchema.obj.title.max),

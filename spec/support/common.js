@@ -232,13 +232,10 @@ async function reloadTestLikes () {
 	return await createTestLikes ();
 }
 
-async function loadRandomPostsAndLikes () {
+async function loadRandomPostsAndLikes (min_posts, min_likes) {
 	const test_users = await UserModel.find ();
 	await deleteTestLikes ();
 	await deleteTestPosts ();
-
-	const min_posts = 15;
-	const min_likes = 45;
 
 	var n_posts = 0;
 	var n_likes = 0;
@@ -311,6 +308,38 @@ function ascendingCreationTimesMatcher (matchersUtil) {
 	};
 }
 
+function postOrderMatcher (matchersUtil) {
+	return {
+		compare: function (object_array, _) {
+			var result = {pass: true, message: "Posts are ordered"};
+
+			var n_0 = object_array [0].n_likes;
+			var t_0 = new Date (object_array [0].createdAt);
+			for (var i = 1; i < object_array.length; i++) {
+				var n_1 = object_array [i].n_likes;
+				var t_1 = new Date (object_array [i].createdAt);
+
+				if (n_1 > n_0) {
+					result.pass = false;
+					result.message = "Likes are not descending";
+					break;
+				}
+				else if (n_1 == n_0 && t_1 < t_0) {
+					result.pass = false;
+					result.message = "Dates are not ascending";
+					break;
+				}
+				else;
+
+				t_0 = t_1;
+				n_0 = n_1;
+			}
+
+			return result;
+		}
+	};
+}
+
 module.exports.TEST_APP_BASE_URL = TEST_APP_BASE_URL;
 module.exports.initTestSuite = initTestSuite;
 module.exports.connectToTestDB = connectToTestDB;
@@ -330,3 +359,4 @@ module.exports.createTestLikes = createTestLikes;
 module.exports.reloadTestLikes = reloadTestLikes;
 module.exports.loadRandomPostsAndLikes = loadRandomPostsAndLikes;
 module.exports.ascendingCreationTimesMatcher = ascendingCreationTimesMatcher;
+module.exports.postOrderMatcher = postOrderMatcher;

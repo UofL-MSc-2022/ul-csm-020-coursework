@@ -11,6 +11,7 @@ describe ("post test suite", function () {
 	const read_end_point = end_point_base + '/read';
 	const update_end_point = end_point_base + '/update';
 	const delete_end_point = end_point_base + '/delete';
+	const list_end_point = end_point_base + '/list';
 
 	const valid_params = { title: 'title', body: 'body' };
 
@@ -46,10 +47,12 @@ describe ("post test suite", function () {
 
 	it ("wrong user", async function () {
 		for (const user of this.test_users) {
-			const posts = await PostModel.find ({ owner: { $ne: user } });
 			const auth_header = common.createTokenHeader (user.id);
 
-			for (const post of posts) {
+			for (const post of this.test_posts) {
+				if (user.id == post.owner.id)
+					continue;
+
 				const requests = [
 					{
 						method: 'delete',
@@ -338,14 +341,72 @@ describe ("post test suite", function () {
 		});
 	});
 
-	describe ("fixture", function () {
-		xit ("load", async function () {
-			await common.reloadTestUsers ();
-			await common.reloadTestPosts ();
-			await common.reloadTestComments ();
-			await common.reloadTestLikes ();
+	describe ("list tests", function () {
+		beforeAll (async function () {
+			jasmine.addMatchers ({ toHaveCorrectPostOrder: common.postOrderMatcher });
+		});
 
-			expect (true).toBe (true);
+		it ("invalid scope", async function () {
+			const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
+			const end_point = list_end_point + '/asdf';
+
+			await axios.get (end_point, auth_header)
+				.then (function (response) {
+					expect (true).toBe (false);
+				})
+				.catch (function (error) {
+					expect (error.response.status).toBe (404);
+				});
+		});
+
+		describe ("all scope", function () {
+			const end_point = list_end_point + '/all';
+
+			beforeEach (async function () { await common.loadRandomPostsAndLikes (15, 45); });
+
+			for (let i=0; i<3; i++)
+				it ("iteration " + i, async function () {
+					const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
+
+					await axios.get (end_point, auth_header)
+						.then (async function (response) {
+							expect (response.status).toBe (200);
+
+							const n_expected = await PostModel.countDocuments ();
+							expect (response.data.length).toBe (n_expected);
+
+							expect (response.data).toHaveCorrectPostOrder ();
+						})
+						.catch (function (error) {
+							expect (true).toBe (false);
+						});
+				});
+		});
+
+		describe ("user scope", function () {
+			const end_point = list_end_point + '/user';
+
+			beforeEach (async function () { await common.loadRandomPostsAndLikes (15, 45); });
+
+			for (let i=0; i<3; i++)
+				it ("iteration " + i, async function () {
+					for (const user of this.test_users) {
+						const auth_header = {headers: common.createTokenHeader (user.id)};
+
+						await axios.get (end_point, auth_header)
+							.then (async function (response) {
+								expect (response.status).toBe (200);
+
+								const n_expected = await PostModel.countDocuments ({owner: user});
+								expect (response.data.length).toBe (n_expected);
+
+								expect (response.data).toHaveCorrectPostOrder ();
+							})
+							.catch (function (error) {
+								expect (true).toBe (false);
+							});
+					}
+				});
 		});
 	});
 });

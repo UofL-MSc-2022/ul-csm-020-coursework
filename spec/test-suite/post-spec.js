@@ -35,7 +35,13 @@ describe ("post test suite", function () {
 				url: update_end_point + '/DEADBEEF' },
 			{
 				method: 'delete',
-				url: delete_end_point + '/DEADBEEF' } ];
+				url: delete_end_point + '/DEADBEEF' },
+			{
+				method: 'get',
+				url: list_end_point + '/all' },
+			{
+				method: 'get',
+				url: list_end_point + '/user' } ];
 
 		for (const end_point of end_points)
 			await axios ({method: end_point.method, url: end_point.url})

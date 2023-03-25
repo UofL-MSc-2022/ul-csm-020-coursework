@@ -88,7 +88,7 @@ function initTestSuite () {
 
 function connectToTestDB () {
 	mongoose.set ('strictQuery', true);
-	mongoose.connect (process.env.TEST_DB_URL, () => {
+	mongoose.connect (process.env.DB_URL, () => {
 		if (config.get ('verbose_testing'))
 			console.log ('MongoDB test db connected ...');
 	});

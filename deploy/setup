@@ -1,0 +1,26 @@
+#! /usr/bin/zsh
+
+NETWORK_NAME=deploy-net
+IP_RANGE=192.168.13.0/24
+GATEWAY=192.168.13.1
+
+PROD_IP=`grep APP_HOST ${0:a:h}/../.env-prod | cut -d= -f2`
+TEST_IP=`grep APP_HOST ${0:a:h}/../.env-test | cut -d= -f2`
+
+PROD_PORT=`grep APP_PORT ${0:a:h}/../.env-prod | cut -d= -f2`
+
+PROD_APP_IMAGE=mini-wall-prod-app
+TEST_APP_IMAGE=mini-wall-test-app
+TEST_SUITE_IMAGE=mini-wall-test-suite
+
+run-prod-app () {
+	docker run --network $NETWORK_NAME --ip $PROD_IP -p $PROD_PORT:$PROD_PORT -d $PROD_APP_IMAGE
+}
+
+run-test-app () {
+	docker run --network $NETWORK_NAME --ip $TEST_IP -d $TEST_APP_IMAGE
+}
+
+run-test-suite () {
+	docker run --network $NETWORK_NAME $TEST_SUITE_IMAGE
+}

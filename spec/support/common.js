@@ -9,7 +9,7 @@ const { CommentModel } = require ('../../source/models/comment');
 const { LikeModel } = require ('../../source/models/like');
 const { createAccessToken } = require ('../../source/auth/jwt');
 
-const TEST_APP_BASE_URL = "http://localhost:3000"
+const TEST_APP_BASE_URL = "http://" + process.env.APP_HOST + ":" + process.env.APP_PORT;
 
 const sample_test_data = {
 	users: [

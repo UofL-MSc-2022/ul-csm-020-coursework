@@ -21,13 +21,13 @@ app.use ('/api/post', postRoute);
 app.use ('/api/comment', commentRoute);
 app.use ('/api/like', likeRoute);
 
-const mongo_db_url = new URL (process.env.NODE_ENV == 'prod' ? process.env.PROD_DB_URL : process.env.TEST_DB_URL);
+const mongo_db_url = new URL (process.env.DB_URL);
 
 mongoose.set ('strictQuery', true);
 mongoose.connect (mongo_db_url.href, () => {
 	console.log ('MongoDB connected [' + mongo_db_url.pathname + '] ...');
 });
 
-app.listen (3000, () => {
-	console.log ('Server is running ...');
+app.listen (process.env.APP_PORT, process.env.APP_HOST, () => {
+	console.log ('Server is listening on ' + process.env.APP_HOST + ':' + process.env.APP_PORT + ' ...');
 });

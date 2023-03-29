@@ -2,19 +2,19 @@
 
 source ${0:a:h}/setup
 
-SIGN_IN_ENDPOINT="/api/user/sign-in"
+end_point="/api/user/sign-in"
 
-OLGA_POST='{"email":"olga@miniwall.com","password":"olgapass"}'
-NICK_POST='{"email":"nick@miniwall.com","password":"nickpass"}'
-MARY_POST='{"email":"mary@miniwall.com","password":"marypass"}'
+olga_data='{"email":"olga@miniwall.com","password":"olgapass"}'
+nick_data='{"email":"nick@miniwall.com","password":"nickpass"}'
+mary_data='{"email":"mary@miniwall.com","password":"marypass"}'
 
 tokens=()
-for post_data in $OLGA_POST $NICK_POST $MARY_POST ; do
+for post_data in $olga_data $nick_data $mary_data ; do
 	echo "Request:"
-	echo "\tPOST $SIGN_IN_ENDPOINT"
+	echo "\tPOST $end_point"
 	echo "\tPOST data: $post_data"
 
-	post_request $SIGN_IN_ENDPOINT $post_data
+	post_request $end_point $post_data
 
 	echo "Response:"
 	echo "\tHTTP status code: $post_code"

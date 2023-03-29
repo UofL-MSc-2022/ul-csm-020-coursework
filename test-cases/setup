@@ -22,10 +22,10 @@ function post_request {
 		-H "Authorization: $token_header" \
 		-H "Content-Type: application/json" \
 		-d "$data" \
-		$url | $pretty_print_json[@] >! $res_body_file
+		$url >! $res_body_file
 
 	post_body=$(<$res_body_file)
-	post_code=`head -n1 $res_hdrs_file | cut -c 3-`
+	post_code=`head -n1 $res_hdrs_file`
 }
 
 function get_request {

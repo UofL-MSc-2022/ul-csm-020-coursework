@@ -10,15 +10,16 @@ mary_data='{"email":"mary@miniwall.com","password":"marypass"}'
 
 tokens=()
 for post_data in $olga_data $nick_data $mary_data ; do
-	echo "Request:"
-	echo "\tPOST $end_point"
-	echo "\tPOST data: $post_data"
+	echo "--- Request ------------"
+	echo "POST $end_point"
+	echo $post_data
 
 	post_request $end_point $post_data
 
-	echo "Response:"
-	echo "\tHTTP status code: $post_code"
-	echo "\tServer response body: $post_body"
+	echo "--- Response -----------"
+	echo $post_code
+	echo $post_body | $pretty_print_json[@]
+	echo "------------------------"
 	echo
 
 	tokens+=(${post_body:15:-2})

@@ -2,21 +2,22 @@
 
 source ${0:a:h}/setup
 
-REGISTER_ENDPOINT="/api/user/register"
+end_point="/api/user/register"
 
-OLGA_POST='{"screen_name":"Olga","email":"olga@miniwall.com","password":"olgapass"}'
-NICK_POST='{"screen_name":"Nick","email":"nick@miniwall.com","password":"nickpass"}'
-MARY_POST='{"screen_name":"Mary","email":"mary@miniwall.com","password":"marypass"}'
+olga_data='{"screen_name":"Olga","email":"olga@miniwall.com","password":"olgapass"}'
+nick_data='{"screen_name":"Nick","email":"nick@miniwall.com","password":"nickpass"}'
+mary_data='{"screen_name":"Mary","email":"mary@miniwall.com","password":"marypass"}'
 
-for post_data in $OLGA_POST $NICK_POST $MARY_POST ; do
-	echo "Request:"
-	echo "\tPOST $REGISTER_ENDPOINT"
-	echo "\tPOST data: $post_data"
+for post_data in $olga_data $nick_data $mary_data ; do
+	echo "--- Request ------------"
+	echo "POST $end_point"
+	echo $post_data
 
-	post_request $REGISTER_ENDPOINT $post_data
+	post_request $end_point $post_data
 
-	echo "Response:"
-	echo "\tHTTP status code: $post_code"
-	echo "\tServer response body: $post_body"
+	echo "--- Response -----------"
+	echo $post_code
+	echo $post_body | $pretty_print_json[@]
+	echo "------------------------"
 	echo
 done

@@ -187,6 +187,11 @@ describe ("post test suite", function () {
 			});
 
 			it ("valid parameters", async function () {
+				jasmine.addMatchers ({ toHaveAscendingCreationTimes: common.ascendingCreationTimesMatcher });
+
+				await common.reloadTestComments ();
+				await common.reloadTestLikes ();
+
 				for (const post of this.test_posts) {
 					const req_config = {headers: common.createTokenHeader (this.test_users [0].id)};
 					const end_point = read_end_point + '/' + post.id;
@@ -195,6 +200,9 @@ describe ("post test suite", function () {
 						.then (function (response) {
 							expect (response.status).toBe (200);
 							expect (response.data ['_id']).toBe (post.id);
+
+							expect (response.data.comments).toHaveAscendingCreationTimes ();
+							expect (response.data.likes).toHaveAscendingCreationTimes ();
 						})
 						.catch (function (error) {
 							expect (true).toBe (false);

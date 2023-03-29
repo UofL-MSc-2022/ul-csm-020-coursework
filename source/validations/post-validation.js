@@ -33,7 +33,7 @@ async function validatePostID (req, res, next) {
 
 function verifyNotPostOwner (req, res, next) {
 	if (req.post.owner.toString () == req.user.id)
-		return res.status (401).send ({message: "Signed in user is the post owner"});
+		return res.status (400).send ({message: "Signed in user is the post owner"});
 
 	next ();
 }

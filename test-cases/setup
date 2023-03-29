@@ -1,0 +1,23 @@
+#! /usr/bin/zsh
+
+# APP_HOST=34.171.48.123
+APP_HOST=localhost
+APP_PORT=3000
+
+RESPONSE_HDRS_FILE=/tmp/wget-headers.dat
+RESPONSE_BODY_FILE=/tmp/wget-body.dat
+
+function post_request {
+	url=http://$APP_HOST:$APP_PORT$1
+	data=$2
+
+	wget \
+		--content-on-error=on \
+		-SqO $RESPONSE_BODY_FILE \
+		--header="Content-Type:application/json" \
+		--post-data=$data \
+		$url 2> $RESPONSE_HDRS_FILE
+
+	post_body=$(<$RESPONSE_BODY_FILE)
+	post_code=`head -n1 $RESPONSE_HDRS_FILE | cut -c 3-`
+}

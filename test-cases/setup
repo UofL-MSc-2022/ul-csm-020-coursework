@@ -4,7 +4,7 @@
 APP_HOST=localhost
 APP_PORT=3000
 
-RESPONSE_HDRS_FILE=/tmp/wget-headers.dat
+RESPONSE_HDRS_FILE=/tmp/curl-headers.dat
 RESPONSE_BODY_FILE=/tmp/wget-body.dat
 
 function post_request {
@@ -20,4 +20,14 @@ function post_request {
 
 	post_body=$(<$RESPONSE_BODY_FILE)
 	post_code=`head -n1 $RESPONSE_HDRS_FILE | cut -c 3-`
+}
+
+function get_request {
+	url=http://$APP_HOST:$APP_PORT$1
+	token_header="Bearer $2"
+
+	curl -s -D $RESPONSE_HDRS_FILE -H "Authorization: $token_header" $url 1> $RESPONSE_BODY_FILE
+
+	get_body=$(<$RESPONSE_BODY_FILE)
+	get_code=`head -n1 $RESPONSE_HDRS_FILE`
 }

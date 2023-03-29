@@ -1,8 +1,6 @@
 #! /usr/bin/zsh
 
-# app_host=34.171.48.123
-app_host=localhost
-app_port=3000
+source ${0:a:h}/../.env
 
 res_hdrs_file=/tmp/curl-headers.dat
 res_body_file=/tmp/wget-body.dat
@@ -10,7 +8,7 @@ res_body_file=/tmp/wget-body.dat
 pretty_print_json=(python3 -m json.tool)
 
 function post_request {
-	url=http://$app_host:$app_port$1
+	url=http://$APP_HOST:$APP_PORT$1
 	data=$2
 
 	if [[ -n $3 ]] ; then
@@ -29,7 +27,7 @@ function post_request {
 }
 
 function get_request {
-	url=http://$app_host:$app_port$1
+	url=http://$APP_HOST:$APP_PORT$1
 
 	if [[ -n $2 ]] ; then
 		token_header="Bearer $2"

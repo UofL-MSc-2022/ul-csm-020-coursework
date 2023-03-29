@@ -1,33 +1,43 @@
 #! /usr/bin/zsh
 
-# APP_HOST=34.171.48.123
-APP_HOST=localhost
-APP_PORT=3000
+# app_host=34.171.48.123
+app_host=localhost
+app_port=3000
 
-RESPONSE_HDRS_FILE=/tmp/curl-headers.dat
-RESPONSE_BODY_FILE=/tmp/wget-body.dat
+res_hdrs_file=/tmp/curl-headers.dat
+res_body_file=/tmp/wget-body.dat
 
 function post_request {
-	url=http://$APP_HOST:$APP_PORT$1
+	url=http://$app_host:$app_port$1
 	data=$2
 
-	wget \
-		--content-on-error=on \
-		-SqO $RESPONSE_BODY_FILE \
-		--header="Content-Type:application/json" \
-		--post-data=$data \
-		$url 2> $RESPONSE_HDRS_FILE
+	if [[ -n $3 ]] ; then
+		token_header="Bearer $3"
+	fi
 
-	post_body=$(<$RESPONSE_BODY_FILE)
-	post_code=`head -n1 $RESPONSE_HDRS_FILE | cut -c 3-`
+	curl -s -X POST \
+		-D $res_hdrs_file \
+		-H "Authorization: $token_header" \
+		-H "Content-Type: application/json" \
+		-d "$data" \
+		$url >! $res_body_file
+
+	post_body=$(<$res_body_file)
+	post_code=`head -n1 $res_hdrs_file | cut -c 3-`
 }
 
 function get_request {
-	url=http://$APP_HOST:$APP_PORT$1
-	token_header="Bearer $2"
+	url=http://$app_host:$app_port$1
 
-	curl -s -D $RESPONSE_HDRS_FILE -H "Authorization: $token_header" $url 1> $RESPONSE_BODY_FILE
+	if [[ -n $2 ]] ; then
+		token_header="Bearer $2"
+	fi
 
-	get_body=$(<$RESPONSE_BODY_FILE)
-	get_code=`head -n1 $RESPONSE_HDRS_FILE`
+	curl -s -X GET \
+		-D $res_hdrs_file \
+		-H "Authorization: $token_header" \
+		$url 1> $res_body_file
+
+	get_body=$(<$res_body_file)
+	get_code=`head -n1 $res_hdrs_file`
 }

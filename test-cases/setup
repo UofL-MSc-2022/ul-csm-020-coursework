@@ -7,6 +7,8 @@ app_port=3000
 res_hdrs_file=/tmp/curl-headers.dat
 res_body_file=/tmp/wget-body.dat
 
+pretty_print_json=(python3 -m json.tool)
+
 function post_request {
 	url=http://$app_host:$app_port$1
 	data=$2
@@ -20,7 +22,7 @@ function post_request {
 		-H "Authorization: $token_header" \
 		-H "Content-Type: application/json" \
 		-d "$data" \
-		$url >! $res_body_file
+		$url | $pretty_print_json[@] >! $res_body_file
 
 	post_body=$(<$res_body_file)
 	post_code=`head -n1 $res_hdrs_file | cut -c 3-`
@@ -36,7 +38,7 @@ function get_request {
 	curl -s -X GET \
 		-D $res_hdrs_file \
 		-H "Authorization: $token_header" \
-		$url 1> $res_body_file
+		$url | $pretty_print_json[@] 1> $res_body_file
 
 	get_body=$(<$res_body_file)
 	get_code=`head -n1 $res_hdrs_file`

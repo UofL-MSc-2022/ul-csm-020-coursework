@@ -44,8 +44,16 @@ router.get ('/read/:post_id', jwtAuth, validatePostID, async (req, res) => {
 
 		await req.post.populate ([
 			{path: 'owner', model: UserModel},
-			{path: 'comments', model: CommentModel, populate: {path: 'author', model: UserModel}},
-			{path: 'likes', model: LikeModel, populate: {path: 'backer', model: UserModel}} ]);
+			{
+				path: 'comments',
+				model: CommentModel,
+				populate: {path: 'author', model: UserModel},
+				options: {sort: {createdAt: 1}} },
+			{
+				path: 'likes',
+				model: LikeModel,
+				populate: {path: 'backer', model: UserModel},
+				options: {sort: {createdAt: 1}} } ]);
 
 		res.send (req.post);
 	}

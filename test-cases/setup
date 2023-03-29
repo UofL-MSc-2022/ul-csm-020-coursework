@@ -3,7 +3,7 @@
 source ${0:a:h}/../.env
 
 res_hdrs_file=/tmp/curl-headers.dat
-res_body_file=/tmp/wget-body.dat
+res_body_file=/tmp/curl-body.dat
 
 pretty_print_json=(python3 -m json.tool)
 

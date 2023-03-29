@@ -2,12 +2,12 @@
 
 source ${0:a:h}/setup
 
-VERSION_ENDPOINT="/api/version"
+end_point="/api/version"
 
 echo "Request:"
-echo "\tGET $VERSION_ENDPOINT"
+echo "\tGET $end_point"
 
-get_request $VERSION_ENDPOINT
+get_request $end_point
 
 echo "Response:"
 echo "\tHTTP status code: $get_code"

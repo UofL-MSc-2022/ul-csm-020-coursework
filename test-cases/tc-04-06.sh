@@ -16,7 +16,7 @@ post_ids=()
 for i in 1 2 3 ; do
 	echo "--- Request ------------"
 	echo "POST $end_point"
-	echo $post_data
+	echo $post_bodies[$i]
 
 	post_request $end_point $post_bodies[$i] $tokens[$i]
 
@@ -24,6 +24,7 @@ for i in 1 2 3 ; do
 	echo $post_code
 	echo $post_body | $pretty_print_json[@]
 	echo "------------------------"
+	echo
 
 	post_ids+=`echo $post_body | grep -Po '"_id":"\K[^"]*'`
 

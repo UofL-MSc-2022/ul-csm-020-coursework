@@ -18,4 +18,5 @@ for token in $NICK_TOKEN $OLGA_TOKEN ; do
 	echo $post_code
 	echo $post_body | $pretty_print_json[@]
 	echo "------------------------"
+	echo
 done

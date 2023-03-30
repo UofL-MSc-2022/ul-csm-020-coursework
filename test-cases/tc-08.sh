@@ -23,4 +23,5 @@ for i in 1 2 ; do
 	echo $post_code
 	echo $post_body | $pretty_print_json[@]
 	echo "------------------------"
+	echo
 done;

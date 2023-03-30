@@ -1,5 +1,5 @@
 #! /usr/bin/zsh
 
-source ${0:a:h}/setup
+source ${0:a:h}/setup.rc
 
 docker run --network $NETWORK_NAME --ip $TEST_IP -d $TEST_APP_IMAGE

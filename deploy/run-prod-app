@@ -1,0 +1,5 @@
+#! /usr/bin/zsh
+
+source ${0:a:h}/setup
+
+docker run --network $NETWORK_NAME --ip $PROD_IP -p $PROD_PORT:$PROD_PORT -d $PROD_APP_IMAGE

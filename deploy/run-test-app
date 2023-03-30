@@ -1,0 +1,5 @@
+#! /usr/bin/zsh
+
+source ${0:a:h}/setup
+
+docker run --network $NETWORK_NAME --ip $TEST_IP -d $TEST_APP_IMAGE

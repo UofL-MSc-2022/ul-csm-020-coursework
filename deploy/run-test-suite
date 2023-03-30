@@ -1,0 +1,5 @@
+#! /usr/bin/zsh
+
+source ${0:a:h}/setup
+
+docker run --network $NETWORK_NAME $TEST_SUITE_IMAGE

@@ -1,14 +1,14 @@
 {
   "name": "mini-wall",
   "version": "1.0.0",
-  "description": "",
+  "description": "Microblogging API, final coursework for CSM020, Jan-Apr 2023",
   "main": "source/app.js",
   "scripts": {
     "start": "nodemon source/app.js",
     "test": "jasmine"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "James Krehl <jek9@student.london.ac.uk>",
+  "license": "UNLICENSED",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.1",

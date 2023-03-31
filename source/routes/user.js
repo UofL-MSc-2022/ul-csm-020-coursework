@@ -8,33 +8,38 @@ const {createAccessToken} = require ('../auth/jwt');
 
 router.post ('/register', async (req, res) => {
 	try {
-		const {error} = registerValidation (req.body);
+		// Validate request parameters against schema
+		const {validationError} = registerValidation (req.body);
+		if (validationError)
+			return res.status (400).send ({message: validationError.details[0].message});
 
-		if (error)
-			return res.status (400).send ({message: error.details[0].message});
+		newUser = await createUser (req.body.screen_name, req.body.email, req.body.password);
 
-		new_user = await createUser (req.body.screen_name, req.body.email, req.body.password);
-
-		res.send (new_user);
+		res.send (newUser);
 	}
-	catch (err) {
-		if (err.code == 11000)
-			msg = "User already exists";
+	catch (error) {
+		// The error object may not contain a code parameter, in which
+		// error.code will be undefined.  This is fine because undefine !=
+		// 11000 and the else condition will be triggered.
+		if (error.code == 11000)
+			message = "User already exists";
 		else
-			msg = err
+			message = error;
 
-		res.status (400).send ({message: msg});
+		res.status (400).send ({message: message});
 	}
 });
 
 router.post ('/sign-in', async (req, res) => {
 	try {
-		const {error} = signInValidation (req.body);
+		// Validate request parameters against schema
+		const {validationError} = signInValidation (req.body);
+		if (validationError)
+			return res.status (400).send ({message: validationError.details[0].message});
 
-		if (error)
-			return res.status (400).send ({message: error.details[0].message});
-
-		// Override select password set to false by User schema
+		// By default, UserModels will not contain the password hash.  It is
+		// necessary to override with by explicitly selecting the password
+		// field here.
 		const user = await UserModel.findOne ({email: req.body.email}).select ('+password');
 
 		if (! user)
@@ -47,7 +52,7 @@ router.post ('/sign-in', async (req, res) => {
 
 		res.send ({'auth-token': token});
 	}
-	catch (err) {
+	catch (error) {
 		res.status (400).send ({message: err});
 	}
 });

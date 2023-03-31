@@ -2,19 +2,16 @@ const express = require ('express');
 
 const router = express.Router ();
 
-const { UserModel, createUser } = require ('../models/user');
-const {
-	registerValidation,
-	signInValidation
-} = require ('../validations/user-validation');
-const { createAccessToken } = require ('../auth/jwt');
+const {UserModel, createUser} = require ('../models/user');
+const {registerValidation, signInValidation} = require ('../validations/user-validation');
+const {createAccessToken} = require ('../auth/jwt');
 
 router.post ('/register', async (req, res) => {
 	try {
 		const {error} = registerValidation (req.body);
 
 		if (error)
-			return res.status (400).send ({message: error ['details'] [0] ['message']});
+			return res.status (400).send ({message: error.details[0].message});
 
 		new_user = await createUser (req.body.screen_name, req.body.email, req.body.password);
 
@@ -26,7 +23,7 @@ router.post ('/register', async (req, res) => {
 		else
 			msg = err
 
-		res.status (400).send ({ message: msg });
+		res.status (400).send ({message: msg});
 	}
 });
 
@@ -35,8 +32,9 @@ router.post ('/sign-in', async (req, res) => {
 		const {error} = signInValidation (req.body);
 
 		if (error)
-			return res.status (400).send ({message: error ['details'] [0] ['message']});
+			return res.status (400).send ({message: error.details[0].message});
 
+		// Override select password set to false by User schema
 		const user = await UserModel.findOne ({email: req.body.email}).select ('+password');
 
 		if (! user)
@@ -50,7 +48,7 @@ router.post ('/sign-in', async (req, res) => {
 		res.send ({'auth-token': token});
 	}
 	catch (err) {
-		res.status (400).send ({ message: err });
+		res.status (400).send ({message: err});
 	}
 });
 

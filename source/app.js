@@ -7,7 +7,8 @@ require ('dotenv/config');
 
 const app = express ();
 
-// Add middleware to marshal JSON strings in HTTP requests into JS objects
+// Add middleware to marshal JSON strings in HTTP request bodies into JS
+// objects
 app.use (bodyParser.json ());
 
 // Load route objects

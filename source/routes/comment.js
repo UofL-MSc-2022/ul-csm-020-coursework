@@ -85,15 +85,15 @@ router.delete ('/delete/:comment_id', jwtAuth, validateCommentID, verifyCommentA
 
 router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 	try {
-		// If scope == 'all', use an empty filter, otherwise filter post owner
-		// by authorised user.
-		var filter = {};
+		// If scope == 'all', use an empty filter, otherwise filter comment
+		// owner by authorised user.
+		let filter = {};
 		if (req.params.scope == 'user')
 			filter = {author: req.user};
 
 		// Hydration happens at two levels: comment -> post -> owner.
 		const comments = await CommentModel.find (filter)
-			.sort ({createdAt: 1})
+			.sort ({createdAt: 'ascending'})
 			.populate ([
 				{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},
 				{path: 'author', model: UserModel}

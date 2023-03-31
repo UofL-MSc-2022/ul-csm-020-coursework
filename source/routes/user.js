@@ -8,7 +8,7 @@ const {createAccessToken} = require ('../auth/jwt');
 
 router.post ('/register', async (req, res) => {
 	try {
-		// Validate request parameters against schema
+		// Validate request parameters against schema.
 		const validation = registerValidation (req.body);
 		if ('error' in validation)
 			return res.status (400).send ({message: validation.error.details[0].message});
@@ -32,7 +32,7 @@ router.post ('/register', async (req, res) => {
 
 router.post ('/sign-in', async (req, res) => {
 	try {
-		// Validate request parameters against schema
+		// Validate request parameters against schema.
 		const validation = signInValidation (req.body);
 		if ('error' in validation)
 			return res.status (400).send ({message: validation.error.details[0].message});

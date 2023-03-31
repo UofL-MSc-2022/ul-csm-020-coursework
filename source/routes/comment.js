@@ -5,16 +5,11 @@ const router = express.Router ();
 const { UserModel } = require ('../models/user');
 const { PostModel } = require ('../models/post');
 const { CommentModel } = require ('../models/comment');
-const { validatePostID, verifyNotPostOwner } = require ('../validations/post-validation');
-const { writeValidation, validateCommentID } = require ('../validations/comment-validation');
-const { jwtAuth } = require ('../auth/jwt');
+const { writeValidation } = require ('../validations/comment-validation');
 
-function verifyCommentAuthor (req, res, next) {
-	if (req.comment.author.toString () != req.user.id)
-		return res.status (400).send ({message: "Signed in user is not the comment author"});
-
-	next ();
-}
+const {jwtAuth} = require ('../middleware/auth');
+const {validatePostID, verifyNotPostOwner} = require ('../middleware/post');
+const {validateCommentID, verifyCommentAuthor} = require ('../middleware/comment');
 
 router.post ('/create/:post_id', jwtAuth, validatePostID, verifyNotPostOwner, async (req, res) => {
 	try {

@@ -2,19 +2,13 @@ const express = require ('express');
 
 const router = express.Router ();
 
-const { UserModel } = require ('../models/user');
-const { PostModel } = require ('../models/post');
-const { CommentModel } = require ('../models/comment');
-const { LikeModel } = require ('../models/like');
-const { createValidation, updateValidation, validatePostID } = require ('../validations/post-validation');
-const { jwtAuth } = require ('../auth/jwt');
-
-function verifyPostOwner (req, res, next) {
-	if (req.post.owner.toString () != req.user.id)
-		return res.status (400).send ({message: "Signed in user is not the post owner"});
-
-	next ();
-}
+const {UserModel} = require ('../models/user');
+const {PostModel} = require ('../models/post');
+const {CommentModel} = require ('../models/comment');
+const {LikeModel} = require ('../models/like');
+const {createValidation, updateValidation} = require ('../validations/post-validation');
+const {jwtAuth} = require ('../middleware/auth');
+const {validatePostID, verifyPostOwner} = require ('../middleware/post');
 
 router.post ('/create', jwtAuth, async (req, res) => {
 	try {

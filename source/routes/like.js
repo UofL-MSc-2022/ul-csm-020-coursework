@@ -5,16 +5,10 @@ const router = express.Router ();
 const { LikeModel } = require ('../models/like');
 const { PostModel } = require ('../models/post');
 const { UserModel } = require ('../models/user');
-const { validatePostID, verifyNotPostOwner } = require ('../validations/post-validation');
-const { validateLikeID } = require ('../validations/like-validation');
-const { jwtAuth } = require ('../auth/jwt');
 
-function verifyLikeBacker (req, res, next) {
-	if (req.like.backer.toString () != req.user.id)
-		return res.status (400).send ({message: "Signed in user is not the like backer"});
-
-	next ();
-}
+const {jwtAuth} = require ('../middleware/auth');
+const {validatePostID, verifyNotPostOwner} = require ('../middleware/post');
+const {validateLikeID, verifyLikeBacker} = require ('../middleware/like');
 
 router.post ('/create/:post_id', jwtAuth, validatePostID, verifyNotPostOwner, async (req, res) => {
 	try {

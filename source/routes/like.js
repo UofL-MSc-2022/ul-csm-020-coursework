@@ -51,8 +51,8 @@ router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 		const likes = await LikeModel.find (filter)
 			.sort ({createdAt: 'ascending'})
 			.populate ([
-				{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},
-				{path: 'backer', model: UserModel}
+				{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel, select: '-_id'}},
+				{path: 'backer', model: UserModel, select: '-_id'}
 			]);
 
 		res.send (likes);

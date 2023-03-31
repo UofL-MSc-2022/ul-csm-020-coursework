@@ -39,8 +39,9 @@ router.get ('/read/:comment_id', jwtAuth, validateCommentID, async (req, res) =>
 	try {
 		// Hydration happens at two levels: comment -> post -> owner.
 		await req.comment.populate ([
-			{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},
-			{path: 'author', model: UserModel} ]);
+			{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel, select: '-_id'}},
+			{path: 'author', model: UserModel, select: '-_id'}
+		]);
 
 		res.send (req.comment);
 	}
@@ -95,8 +96,8 @@ router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 		const comments = await CommentModel.find (filter)
 			.sort ({createdAt: 'ascending'})
 			.populate ([
-				{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},
-				{path: 'author', model: UserModel}
+				{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel, select: '-_id'}},
+				{path: 'author', model: UserModel, select: '-_id'}
 			]);
 
 		res.send (comments);

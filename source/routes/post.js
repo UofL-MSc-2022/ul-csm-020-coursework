@@ -43,17 +43,17 @@ router.get ('/read/:post_id', jwtAuth, validatePostID, async (req, res) => {
 		req.post.n_likes = req.post.likes.length;
 
 		await req.post.populate ([
-			{path: 'owner', model: UserModel},
+			{path: 'owner', model: UserModel, select: '-_id'},
 			{
 				path: 'comments',
 				model: CommentModel,
-				populate: {path: 'author', model: UserModel},
+				populate: {path: 'author', model: UserModel, select: '-_id'},
 				options: {sort: {createdAt: 'ascending'}}
 			},
 			{
 				path: 'likes',
 				model: LikeModel,
-				populate: {path: 'backer', model: UserModel},
+				populate: {path: 'backer', model: UserModel, select: '-_id'},
 				options: {sort: {createdAt: 'ascending'}}
 			}
 		]);
@@ -127,7 +127,7 @@ router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 		// When a user requests only their posts, a fully hydrated owner object
 		// is not needed.
 		if (req.params.scope != 'user')
-			await PostModel.populate (posts, {path: 'owner', model: UserModel});
+			await PostModel.populate (posts, {path: 'owner', model: UserModel, select: '-_id'});
 
 		res.send (posts);
 	}

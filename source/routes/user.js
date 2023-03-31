@@ -3,13 +3,13 @@ const express = require ('express');
 const router = express.Router ();
 
 const {UserModel, createUser} = require ('../models/user');
-const {registerValidation, signInValidation} = require ('../validations/user-validation');
+const {validateRegister, validateSignIn} = require ('../validation/user');
 const {createAccessToken} = require ('../auth/jwt');
 
 router.post ('/register', async (req, res) => {
 	try {
 		// Validate request parameters against schema.
-		const validation = registerValidation (req.body);
+		const validation = validateRegister (req.body);
 		if ('error' in validation)
 			return res.status (400).send ({message: validation.error.details[0].message});
 
@@ -33,7 +33,7 @@ router.post ('/register', async (req, res) => {
 router.post ('/sign-in', async (req, res) => {
 	try {
 		// Validate request parameters against schema.
-		const validation = signInValidation (req.body);
+		const validation = validateSignIn (req.body);
 		if ('error' in validation)
 			return res.status (400).send ({message: validation.error.details[0].message});
 

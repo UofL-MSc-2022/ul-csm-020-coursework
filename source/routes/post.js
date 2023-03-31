@@ -7,7 +7,7 @@ const {CommentModel} = require ('../models/comment');
 const {LikeModel} = require ('../models/like');
 
 // Validation
-const {createValidation, updateValidation} = require ('../validations/post-validation');
+const {validateCreate, validateUpdate} = require ('../validation/post');
 
 // Middleware
 const {jwtAuth} = require ('../middleware/auth');
@@ -18,7 +18,7 @@ const router = express.Router ();
 router.post ('/create', jwtAuth, async (req, res) => {
 	try {
 		// Validate request parameters against schema.
-		const validation = createValidation (req.body);
+		const validation = validateCreate (req.body);
 		if ('error' in validation)
 			return res.status (400).send ({message: validation.error.details[0].message});
 
@@ -68,7 +68,7 @@ router.get ('/read/:post_id', jwtAuth, validatePostID, async (req, res) => {
 router.patch ('/update/:post_id', jwtAuth, validatePostID, verifyPostOwner, async (req, res) => {
 	try {
 		// Validate request parameters against schema.
-		const validation = updateValidation (req.body);
+		const validation = validateUpdate (req.body);
 		if ('error' in validation)
 			return res.status (400).send ({message: validation.error.details[0].message});
 

@@ -52,7 +52,7 @@ describe ("like test suite", function () {
 					expect (true).toBe (false);
 				})
 				.catch (function (error) {
-					expect (error.response.status).toBe (401);
+					expect (error.response.status).toBe (400);
 				});
 		}
 	});
@@ -69,12 +69,12 @@ describe ("like test suite", function () {
 
 				const auth_header = {headers: common.createTokenHeader (user.id)};
 
-				await axios.delete (end_point, {}, auth_header)
+				await axios.delete (end_point, auth_header)
 					.then (function (response) {
 						expect (true).toBe (false);
 					})
 					.catch (function (error) {
-						expect (error.response.status).toBe (401);
+						expect (error.response.status).toBe (400);
 					});
 			}
 		}

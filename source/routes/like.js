@@ -11,7 +11,7 @@ const { jwtAuth } = require ('../auth/jwt');
 
 function verifyLikeBacker (req, res, next) {
 	if (req.like.backer.toString () != req.user.id)
-		return res.status (401).send ({message: "Signed in user is not the like backer"});
+		return res.status (400).send ({message: "Signed in user is not the like backer"});
 
 	next ();
 }

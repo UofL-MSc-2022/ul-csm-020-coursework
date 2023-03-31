@@ -64,7 +64,7 @@ describe ("comment test suite", function () {
 					expect (true).toBe (false);
 				})
 				.catch (function (error) {
-					expect (error.response.status).toBe (401);
+					expect (error.response.status).toBe (400);
 				});
 		}
 	});
@@ -99,7 +99,7 @@ describe ("comment test suite", function () {
 							expect (true).toBe (false);
 						})
 						.catch (function (error) {
-							expect (error.response.status).toBe (401);
+							expect (error.response.status).toBe (400);
 						});
 				}
 			}

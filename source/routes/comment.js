@@ -11,7 +11,7 @@ const { jwtAuth } = require ('../auth/jwt');
 
 function verifyCommentAuthor (req, res, next) {
 	if (req.comment.author.toString () != req.user.id)
-		return res.status (401).send ({message: "Signed in user is not the comment author"});
+		return res.status (400).send ({message: "Signed in user is not the comment author"});
 
 	next ();
 }

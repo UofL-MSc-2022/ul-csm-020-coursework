@@ -1,7 +1,9 @@
 const joi = require ('joi');
 
+// Use field definitions from model module.
 const {postValidationFields} = require ('../models/post');
 
+// Define validation schemas.
 const createSchema = joi.object ({
 	title: postValidationFields.title,
 	body: postValidationFields.body
@@ -11,6 +13,7 @@ const createSchema = joi.object ({
 // field to be present.
 const updateSchema = createSchema.fork (['title', 'body'], field => field.optional ()).min (1);
 
+// Create helper functions to apply validation schemas.
 function validateCreate (data) {
 	return createSchema.validate (data);
 }

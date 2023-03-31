@@ -1,7 +1,9 @@
 const joi = require ('joi');
 
+// Use field definitions from model module.
 const {userValidationFields} = require ('../models/user');
 
+// Define validation schemas.
 const registerSchema = joi.object ({
 	screen_name: userValidationFields.screen_name,
 	email: userValidationFields.email,
@@ -13,6 +15,7 @@ const signInSchema = joi.object ({
 	password: userValidationFields.password
 });
 
+// Create helper functions to apply validation schemas.
 function validateRegister (data) {
 	return registerSchema.validate (data);
 }

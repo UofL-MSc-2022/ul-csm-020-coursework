@@ -9,9 +9,9 @@ const {createAccessToken} = require ('../auth/jwt');
 router.post ('/register', async (req, res) => {
 	try {
 		// Validate request parameters against schema
-		const {validationError} = registerValidation (req.body);
-		if (validationError)
-			return res.status (400).send ({message: validationError.details[0].message});
+		const validation = registerValidation (req.body);
+		if ('error' in validation)
+			return res.status (400).send ({message: validation.error.details[0].message});
 
 		newUser = await createUser (req.body.screen_name, req.body.email, req.body.password);
 
@@ -33,9 +33,9 @@ router.post ('/register', async (req, res) => {
 router.post ('/sign-in', async (req, res) => {
 	try {
 		// Validate request parameters against schema
-		const {validationError} = signInValidation (req.body);
-		if (validationError)
-			return res.status (400).send ({message: validationError.details[0].message});
+		const validation = signInValidation (req.body);
+		if ('error' in validation)
+			return res.status (400).send ({message: validation.error.details[0].message});
 
 		// By default, UserModels will not contain the password hash.  It is
 		// necessary to override with by explicitly selecting the password
@@ -53,7 +53,7 @@ router.post ('/sign-in', async (req, res) => {
 		res.send ({'auth-token': token});
 	}
 	catch (error) {
-		res.status (400).send ({message: err});
+		res.status (400).send ({message: error});
 	}
 });
 

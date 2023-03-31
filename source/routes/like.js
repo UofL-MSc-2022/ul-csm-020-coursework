@@ -1,50 +1,64 @@
 const express = require ('express');
 
-const router = express.Router ();
+// Models
+const {LikeModel} = require ('../models/like');
+const {PostModel} = require ('../models/post');
+const {UserModel} = require ('../models/user');
 
-const { LikeModel } = require ('../models/like');
-const { PostModel } = require ('../models/post');
-const { UserModel } = require ('../models/user');
-
+// Middleware
 const {jwtAuth} = require ('../middleware/auth');
 const {validatePostID, verifyNotPostOwner} = require ('../middleware/post');
 const {validateLikeID, verifyLikeBacker} = require ('../middleware/like');
 
+const router = express.Router ();
+
 router.post ('/create/:post_id', jwtAuth, validatePostID, verifyNotPostOwner, async (req, res) => {
 	try {
-		res.send (await LikeModel.create ({ post: req.post, backer: req.user }));
+		const newLike = await LikeModel.create ({
+			post: req.post,
+			backer: req.user
+		});
+
+		res.send (newLike);
 	}
-	catch (err) {
-		res.status (400).send ({ message: err });
+	catch (error) {
+		res.status (400).send ({message: error});
 	}
 });
 
 router.delete ('/delete/:like_id', jwtAuth, validateLikeID, verifyLikeBacker, async (req, res) => {
 	try {
-		res.send (await LikeModel.deleteOne ({_id: req.like.id}));
+		// The deleteOne function returns a summary of the delete action,
+		// return this to the end user.  The raw id field, _id, must be used
+		// explicitly.
+		const summary = await LikeModel.deleteOne ({_id: req.like.id});
+
+		res.send (summary);
 	}
-	catch (err) {
-		res.status (400).send ({ message: err });
+	catch (error) {
+		res.status (400).send ({message: error});
 	}
 });
 
 router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 	try {
-		var filter = {};
+		// If scope == 'all', use an empty filter, otherwise filter like owner
+		// by authorised user.
+		let filter = {};
 		if (req.params.scope == 'user')
-			filter = {backer: req.user.id};
+			filter = {backer: req.user};
 
 		const likes = await LikeModel.find (filter)
-			.sort ({createdAt: 1})
-			.populate (
-				[
-					{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},
-					{path: 'backer', model: UserModel} ]);
+			.sort ({createdAt: 'ascending'})
+			.populate ([
+				{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},
+				{path: 'backer', model: UserModel}
+			]);
 
 		res.send (likes);
 	}
-	catch (err) {
-		res.status (400).send ({ message: err });
+	catch (error) {
+		res.status (400).send ({message: error});
 	}
 });
 

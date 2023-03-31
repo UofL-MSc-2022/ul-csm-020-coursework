@@ -9,7 +9,7 @@ const { createAccessToken, verifyAccessToken } = require ('../../source/auth/jwt
 common.initTestSuite ();
 
 describe ("jwt auth test suite", function () {
-	const end_point = common.TEST_APP_BASE_URL + '/api/version';
+	const end_point = common.TEST_APP_BASE_URL + '/api/post/list/all';
 
 	beforeAll (common.connectToTestDB);
 	beforeEach (async function () { this.test_users = await common.reloadTestUsers (); });

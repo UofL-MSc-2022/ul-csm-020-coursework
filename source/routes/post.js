@@ -88,7 +88,8 @@ router.patch ('/update/:post_id', jwtAuth, validatePostID, verifyPostOwner, asyn
 router.delete ('/delete/:post_id', jwtAuth, validatePostID, verifyPostOwner, async (req, res) => {
 	try {
 		// The deleteOne function returns a summary of the delete action,
-		// return this to the end user.
+		// return this to the end user.  The raw id field, _id, must be used
+		// explicitly.
 		const summary = await PostModel.deleteOne ({_id: req.post.id});
 
 		res.send (summary);

@@ -1,52 +1,45 @@
 const axios = require ("axios");
 
 const common = require ('../support/common');
-const { CommentModel, commentValidationFields } = require ('../../source/models/comment');
-const { PostModel } = require ('../../source/models/post');
+const {CommentModel, commentValidationFields} = require ('../../source/models/comment');
 
 common.initTestSuite ();
 
-describe ("comment test suite", function () {
-	const end_point_base = common.TEST_APP_BASE_URL + '/api/comment';
-	const create_end_point = end_point_base + '/create';
-	const read_end_point = end_point_base + '/read';
-	const update_end_point = end_point_base + '/update';
-	const delete_end_point = end_point_base + '/delete';
-	const list_end_point = end_point_base + '/list';
+describe ("Comment endpoint tests:", function () {
+	const endpointBase = common.BASE_URL + '/api/comment';
+	const createEndpoint = endpointBase + '/create';
+	const readEndpoint = endpointBase + '/read';
+	const updateEndpoint = endpointBase + '/update';
+	const deleteEndpoint = endpointBase + '/delete';
+	const listEndpoint = endpointBase + '/list';
 
-	const valid_params = { body: 'body' };
+	const validParams = {body: 'body'};
 
+	// All tests in this suite require existing users, posts, and comments.
 	beforeAll (common.connectToTestDB);
 	beforeEach (async function () {
-		this.test_users = await common.reloadTestUsers ();
-		this.test_posts = await common.reloadTestPosts ();
-		this.test_comments = await common.reloadTestComments ();
+		this.testUsers = await common.reloadTestUsers ();
+		this.testPosts = await common.reloadTestPosts ();
+		this.testComments = await common.reloadTestComments ();
 	});
 
-	it ("verify auth required", async function () {
-		const end_points = [
-			{
-				method: 'post',
-				url: create_end_point + '/DEADBEEF' },
-			{
-				method: 'get',
-				url: read_end_point + '/DEADBEEF' },
-			{
-				method: 'patch',
-				url: update_end_point + '/DEADBEEF' },
-			{
-				method: 'delete',
-				url: delete_end_point + '/DEADBEEF' },
-			{
-				method: 'get',
-				url: list_end_point + '/all' },
-			{
-				method: 'get',
-				url: list_end_point + '/user' } ];
+	// Verify that all endpoints require an auth token.
+	it ("All endpoints require authorisation.", async function () {
+		// Endpoints that take an ObjectID as a parameter can use a nonsense
+		// value, since the authorisation check happens before parameter
+		// validation.
+		const endpoints = [
+			{method: 'post', url: createEndpoint + '/DEADBEEF'},
+			{method: 'get', url: readEndpoint + '/DEADBEEF'},
+			{method: 'patch', url: updateEndpoint + '/DEADBEEF'},
+			{method: 'delete', url: deleteEndpoint + '/DEADBEEF'},
+			{method: 'get', url: listEndpoint + '/all'},
+			{method: 'get', url: listEndpoint + '/user'}
+		];
 
-		for (const end_point of end_points)
-			await axios ({method: end_point.method, url: end_point.url})
-				.then (function (response) {
+		for (const endpoint of endpoints)
+			await axios ({method: endpoint.method, url: endpoint.url})
+				.then (function (res) {
 					expect (true).toBe (false);
 				})
 				.catch (function (error) {
@@ -54,13 +47,14 @@ describe ("comment test suite", function () {
 				});
 	});
 
-	it ("wrong user, create", async function () {
-		for (const post of this.test_posts) {
-			const auth_header = {headers: common.createTokenHeader (post.owner)};
-			const end_point = create_end_point + '/' + post.id;
+	// Verify that the owner of a post cannot comment on the post.
+	it ("The post owner cannot comment on the post.", async function () {
+		for (const post of this.testPosts) {
+			const header = {headers: common.createTokenHeader (post.owner)};
+			const endpoint = createEndpoint + '/' + post.id;
 
-			await axios.post (end_point, valid_params, auth_header)
-				.then (function (response) {
+			await axios.post (endpoint, validParams, header)
+				.then (function (res) {
 					expect (true).toBe (false);
 				})
 				.catch (function (error) {
@@ -69,33 +63,39 @@ describe ("comment test suite", function () {
 		}
 	});
 
-	it ("wrong user, update and delete", async function () {
-		for (const comment of this.test_comments) {
-			const requests = [
+	// Verify that only the author of a comment can update or delete it.
+	it ("Only the comment author can update or delete a comment.", async function () {
+		for (const comment of this.testComments) {
+			const requestParams = [
 				{
 					method: 'patch',
-					end_point: update_end_point + '/' + comment.id,
-					params: valid_params },
+					endpoint: updateEndpoint + '/' + comment.id,
+					params: validParams
+				},
 				{
 					method: 'delete',
-					end_point: delete_end_point + '/' + comment.id,
-					params: {} } ];
+					endpoint: deleteEndpoint + '/' + comment.id,
+					params: {}
+				}
+			];
 
-			for (const user of this.test_users) {
+			for (const user of this.testUsers) {
+				// Skip the author.
 				if (user.id == comment.author.id)
 					continue;
 
-				const auth_header = common.createTokenHeader (user.id);
+				const header = common.createTokenHeader (user.id);
 
-				for (const req of requests) {
-					req_config = {
-						method: req.method,
-						url: req.end_point,
-						data: req.params,
-						headers: auth_header};
+				for (const params of requestParams) {
+					requestConfig = {
+						method: params.method,
+						url: params.endpoint,
+						data: params.params,
+						headers: header
+					};
 
-					await axios (req_config)
-						.then (function (response) {
+					await axios (requestConfig)
+						.then (function (res) {
 							expect (true).toBe (false);
 						})
 						.catch (function (error) {
@@ -106,26 +106,37 @@ describe ("comment test suite", function () {
 		}
 	});
 
-	describe ("verify CRUD methods", function () {
-		const min_params = { body: "a" };
-		const max_params = {
-			body: "a".repeat (common.maxValidLength (commentValidationFields, 'body') + 1) };
+	// Test all CRUD methods.
+	describe ("CRUD tests:", function () {
+		// Short parameter values.
+		const minParams = {body: "a"};
 
-		describe ("create tests", function () {
+		// Long parameter values, based on the max length extracted from the
+		// validation field array.
+		const maxParams = {
+			body: "a".repeat (common.maxValidLength (commentValidationFields, 'body') + 1)
+		};
+
+		describe ("Create tests:", function () {
+			// Clear the comments collection before each spec.
 			beforeEach (common.deleteTestComments);
 
-			it ("missing parameters", async function () {
-				for (const post of this.test_posts) {
-					const end_point = create_end_point + '/' + post.id;
+			// Verify that required fields are enforced.
+			it ("Request must include all required parameters.", async function () {
+				for (const post of this.testPosts) {
+					const endpoint = createEndpoint + '/' + post.id;
 
-					for (const user of this.test_users) {
+					for (const user of this.testUsers) {
+						// Skip the post owner.
 						if (user.id == post.owner.id)
 							continue;
 
-						const auth_header = {headers: common.createTokenHeader (user.id)};
+						const header = {headers: common.createTokenHeader (user.id)};
 
-						await axios.post (end_point, {}, auth_header)
-							.then (function (response) {
+						// There is only 1 required parameter, therefore send
+						// an empty body to test validation.
+						await axios.post (endpoint, {}, header)
+							.then (function (res) {
 								expect (true).toBe (false);
 							})
 							.catch (function (error) {
@@ -135,23 +146,27 @@ describe ("comment test suite", function () {
 				}
 			});
 
-			it ("invalid parameters", async function () {
-				const test_params = [
-					{ body: min_params.body },
-					{ body: max_params.body } ];
+			// Verify that string parameters must conform to length constraints.
+			it ("Parameters must conform to length constraints.", async function () {
+				// Test both sides of the valid body length range.
+				const testParams = [
+					{body: minParams.body},
+					{body: maxParams.body}
+				];
 
-				for (const post of this.test_posts) {
-					const end_point = create_end_point + '/' + post.id;
+				for (const post of this.testPosts) {
+					const endpoint = createEndpoint + '/' + post.id;
 
-					for (const user of this.test_users) {
+					for (const user of this.testUsers) {
+						// Skip the post owner.
 						if (user.id == post.owner.id)
 							continue;
 
-						const auth_header = {headers: common.createTokenHeader (user.id)};
+						const header = {headers: common.createTokenHeader (user.id)};
 
-						for (const params of test_params)
-							await axios.post (end_point, params, auth_header)
-								.then (function (response) {
+						for (const params of testParams)
+							await axios.post (endpoint, params, header)
+								.then (function (res) {
 									expect (true).toBe (false);
 								})
 								.catch (function (error) {
@@ -161,21 +176,23 @@ describe ("comment test suite", function () {
 				}
 			});
 
-			it ("valid parameters", async function () {
-				for (const post of this.test_posts) {
-					const end_point = create_end_point + '/' + post.id;
+			// Test that comment creation works.
+			it ("Users can create comments.", async function () {
+				for (const post of this.testPosts) {
+					const endpoint = createEndpoint + '/' + post.id;
 
-					for (const user of this.test_users) {
+					for (const user of this.testUsers) {
+						// Skip the post owner.
 						if (user.id == post.owner.id)
 							continue;
 
-						const auth_header = {headers: common.createTokenHeader (user.id)};
+						const header = {headers: common.createTokenHeader (user.id)};
 
-						await axios.post (end_point, valid_params, auth_header)
-							.then (function (response) {
-								expect (response.status).toBe (200);
-								expect (response.data ['post']).toBe (post.id);
-								expect (response.data ['author']).toBe (user.id);
+						await axios.post (endpoint, validParams, header)
+							.then (function (res) {
+								expect (res.status).toBe (200);
+								expect (res.data.post).toBe (post.id);
+								expect (res.data.author).toBe (user.id);
 							})
 							.catch (function (error) {
 								expect (true).toBe (false);
@@ -185,12 +202,15 @@ describe ("comment test suite", function () {
 			});
 		});
 
-		describe ("read tests", function () {
-			it ("missing parameters", async function () {
-				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
+		describe ("Read tests:", function () {
+			// Verify that the read endpoint requires a comment id.
+			it ("Request must include a comment id.", async function () {
+				const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
 
-				await axios.get (read_end_point, auth_header)
-					.then (function (response) {
+				// Make the request without adding a post id to the
+				// readEndpoint.
+				await axios.get (readEndpoint, header)
+					.then (function (res) {
 						expect (true).toBe (false);
 					})
 					.catch (function (error) {
@@ -198,15 +218,19 @@ describe ("comment test suite", function () {
 					});
 			});
 
-			it ("invalid parameters", async function () {
-				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
-				const end_points = [
-					read_end_point + '/DEADBEEF', // Malformed ObjectID
-					read_end_point + '/12345678DEADBEEF98765432' ]; // Nonexistent ObjectID
+			// Verify that the comment id is valid.
+			it ("Comment id must be valid.", async function () {
+				const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
+				const endpoints = [
+					// Malformed comment id.
+					readEndpoint + '/DEADBEEF',
+					// Nonexistent comment id.
+					readEndpoint + '/12345678DEADBEEF98765432'
+				];
 
-				for (end_point of end_points)
-					await axios.get (end_point, auth_header)
-						.then (function (response) {
+				for (endpoint of endpoints)
+					await axios.get (endpoint, header)
+						.then (function (res) {
 							expect (true).toBe (false);
 						})
 						.catch (function (error) {
@@ -214,17 +238,16 @@ describe ("comment test suite", function () {
 						});
 			});
 
-			it ("valid parameters", async function () {
-				test_comments = await common.reloadTestComments ();
+			// User can read comment.
+			it ("Users can read comments.", async function () {
+				for (const comment of this.testComments) {
+					const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
+					const endpoint = readEndpoint + '/' + comment.id;
 
-				for (const comment of test_comments) {
-					const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
-					const end_point = read_end_point + '/' + comment.id;
-
-					await axios.get (end_point, auth_header)
-						.then (function (response) {
-							expect (response.status).toBe (200);
-							expect (response.data ['_id']).toBe (comment.id);
+					await axios.get (endpoint, header)
+						.then (function (res) {
+							expect (res.status).toBe (200);
+							expect (res.data._id).toBe (comment.id);
 						})
 						.catch (function (error) {
 							expect (true).toBe (false);
@@ -233,16 +256,17 @@ describe ("comment test suite", function () {
 			});
 		});
 
-		describe ("update tests", function () {
-			beforeEach (async function () { this.test_comments = await common.reloadTestComments (); });
+		describe ("Update tests:", function () {
+			// Verify that required fields are enforced.
+			it ("Request must include all required parameters.", async function () {
+				for (const comment of this.testComments) {
+					const endpoint = updateEndpoint + '/' + comment.id;
+					const header = {headers: common.createTokenHeader (comment.author.id)};
 
-			it ("missing parameters", async function () {
-				for (const comment of this.test_comments) {
-					const end_point = update_end_point + '/' + comment.id;
-					const auth_header = {headers: common.createTokenHeader (comment.author.id)};
-
-					await axios.patch (end_point, {}, auth_header)
-						.then (function (response) {
+					// There is only 1 required parameter, therefore send an
+					// empty body to test validation.
+					await axios.patch (endpoint, {}, header)
+						.then (function (res) {
 							expect (true).toBe (false);
 						})
 						.catch (function (error) {
@@ -251,18 +275,21 @@ describe ("comment test suite", function () {
 				}
 			});
 
-			it ("invalid parameters", async function () {
-				const test_params = [
-					{ body: min_params.body },
-					{ body: max_params.body } ];
+			// Verify that string parameters must conform to length constraints.
+			it ("Parameters must conform to length constraints.", async function () {
+				// Test both sides of the valid body length range.
+				const testParams = [
+					{body: minParams.body},
+					{body: maxParams.body}
+				];
 
-				for (const comment of this.test_comments) {
-					const auth_header = {headers: common.createTokenHeader (comment.author.id)};
-					const end_point = update_end_point + '/' + comment.id;
+				for (const comment of this.testComments) {
+					const header = {headers: common.createTokenHeader (comment.author.id)};
+					const endpoint = updateEndpoint + '/' + comment.id;
 
-					for (const params of test_params)
-						await axios.patch (end_point, params, auth_header)
-							.then (function (response) {
+					for (const params of testParams)
+						await axios.patch (endpoint, params, header)
+							.then (function (res) {
 								expect (true).toBe (false);
 							})
 							.catch (function (error) {
@@ -271,15 +298,16 @@ describe ("comment test suite", function () {
 				}
 			});
 
-			it ("valid parameters", async function () {
-				for (const comment of this.test_comments) {
-					const auth_header = {headers: common.createTokenHeader (comment.author.id)};
-					const end_point = update_end_point + '/' + comment.id;
+			// Test that comment updating works.
+			it ("Users can update comments.", async function () {
+				for (const comment of this.testComments) {
+					const header = {headers: common.createTokenHeader (comment.author.id)};
+					const endpoint = updateEndpoint + '/' + comment.id;
 
-					await axios.patch (end_point, valid_params, auth_header)
-						.then (function (response) {
-							expect (response.status).toBe (200);
-							expect (response.data.body).toBe (valid_params.body);
+					await axios.patch (endpoint, validParams, header)
+						.then (function (res) {
+							expect (res.status).toBe (200);
+							expect (res.data.body).toBe (validParams.body);
 						})
 						.catch (function (error) {
 							expect (true).toBe (false);
@@ -288,14 +316,15 @@ describe ("comment test suite", function () {
 			});
 		});
 
-		describe ("delete tests", function () {
-			beforeEach (async function () { this.test_comments = await common.reloadTestComments (); });
+		describe ("Delete tests:", function () {
+			// Verify that the delete endpoint requires a comment id.
+			it ("Request must include a comment id.", async function () {
+				const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
 
-			it ("missing parameters", async function () {
-				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
-
-				await axios.delete (delete_end_point, auth_header)
-					.then (function (response) {
+				// Make the request without adding a comment id to the
+				// deleteEndpoint.
+				await axios.delete (deleteEndpoint, header)
+					.then (function (res) {
 						expect (true).toBe (false);
 					})
 					.catch (function (error) {
@@ -303,15 +332,19 @@ describe ("comment test suite", function () {
 					});
 			});
 
-			it ("invalid parameters", async function () {
-				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
-				const end_points = [
-					delete_end_point + '/DEADBEEF', // Malformed ObjectID
-					delete_end_point + '/12345678DEADBEEF98765432' ]; // Nonexistent ObjectID
+			// Verify that the comment id is valid.
+			it ("Comment id must be valid.", async function () {
+				const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
+				const endpoints = [
+					// Malformed post id.
+					deleteEndpoint + '/DEADBEEF',
+					// Nonexistent post id.
+					deleteEndpoint + '/12345678DEADBEEF98765432'
+				];
 
-				for (end_point of end_points)
-					await axios.delete (end_point, auth_header)
-						.then (function (response) {
+				for (endpoint of endpoints)
+					await axios.delete (endpoint, header)
+						.then (function (res) {
 							expect (true).toBe (false);
 						})
 						.catch (function (error) {
@@ -319,15 +352,16 @@ describe ("comment test suite", function () {
 						});
 			});
 
-			it ("valid parameters", async function () {
-				for (const comment of this.test_comments) {
-					const auth_header = {headers: common.createTokenHeader (comment.author)};
-					const end_point = delete_end_point + '/' + comment.id;
+			// Test that comment deletion works.
+			it ("Users can delete comments.", async function () {
+				for (const comment of this.testComments) {
+					const header = {headers: common.createTokenHeader (comment.author)};
+					const endpoint = deleteEndpoint + '/' + comment.id;
 
-					await axios.delete (end_point, auth_header)
-						.then (function (response) {
-							expect (response.status).toBe (200);
-							expect (response.data.deletedCount).toBe (1);
+					await axios.delete (endpoint, header)
+						.then (function (res) {
+							expect (res.status).toBe (200);
+							expect (res.data.deletedCount).toBe (1);
 						})
 						.catch (function (error) {
 							expect (true).toBe (false);
@@ -337,19 +371,21 @@ describe ("comment test suite", function () {
 		});
 	});
 
-	describe ("list tests", function () {
+	describe ("List tests:", function () {
 		beforeAll (function () {
-			jasmine.addMatchers ({ toHaveAscendingCreationTimes: common.ascendingCreationTimesMatcher });
+			// Add matcher that verifies comment ordering.
+			jasmine.addMatchers ({
+				toHaveAscendingCreationTimes: common.ascendingCreationTimesMatcher
+			});
 		});
 
-		beforeEach (async function () { this.test_likes = await common.reloadTestLikes (); });
+		// Verify that the scope must be valid.
+		it ("Scope is not 'all' or 'user'.", async function () {
+			const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
+			const endpoint = listEndpoint + '/not_a_valid_scope';
 
-		it ("invalid scope", async function () {
-			const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
-			const end_point = list_end_point + '/asdf';
-
-			await axios.get (end_point, auth_header)
-				.then (function (response) {
+			await axios.get (endpoint, header)
+				.then (function (res) {
 					expect (true).toBe (false);
 				})
 				.catch (function (error) {
@@ -357,38 +393,40 @@ describe ("comment test suite", function () {
 				});
 		});
 
-		it ("all scope", async function () {
-			const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
-			const end_point = list_end_point + '/all';
+		// Verify the result of listing all comments, including ordering.
+		it ("Scope is 'all'.", async function () {
+			const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
+			const endpoint = listEndpoint + '/all';
 
-			await axios.get (end_point, auth_header)
-				.then (async function (response) {
-					expect (response.status).toBe (200);
+			await axios.get (endpoint, header)
+				.then (async function (res) {
+					expect (res.status).toBe (200);
 
-					const n_expected = await CommentModel.countDocuments ();
-					expect (response.data.length).toBe (n_expected);
+					const nExpected = await CommentModel.countDocuments ();
+					expect (res.data.length).toBe (nExpected);
 
-					expect (response.data).toHaveAscendingCreationTimes ();
+					expect (res.data).toHaveAscendingCreationTimes ();
 				})
 				.catch (function (error) {
 					expect (true).toBe (false);
 				});
 		});
 
-		it ("user scope", async function () {
-			const end_point = list_end_point + '/user';
+		// Verify the result of listing user's comments, including ordering.
+		it ("Scope is 'user'.", async function () {
+			const endpoint = listEndpoint + '/user';
 
-			for (const user of this.test_users) {
-				const auth_header = {headers: common.createTokenHeader (user.id)};
+			for (const user of this.testUsers) {
+				const header = {headers: common.createTokenHeader (user.id)};
 
-				await axios.get (end_point, auth_header)
-					.then (async function (response) {
-						expect (response.status).toBe (200);
+				await axios.get (endpoint, header)
+					.then (async function (res) {
+						expect (res.status).toBe (200);
 
-						const n_expected = await CommentModel.countDocuments ({author: user});
-						expect (response.data.length).toBe (n_expected);
+						const nExpected = await CommentModel.countDocuments ({author: user});
+						expect (res.data.length).toBe (nExpected);
 
-						expect (response.data).toHaveAscendingCreationTimes ();
+						expect (res.data).toHaveAscendingCreationTimes ();
 					})
 					.catch (function (error) {
 						expect (true).toBe (false);

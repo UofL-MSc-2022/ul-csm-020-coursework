@@ -18,9 +18,10 @@ router.post ('/register', async (req, res) => {
 		res.send (newUser);
 	}
 	catch (error) {
-		// The error object may not contain a code parameter, in which
-		// error.code will be undefined.  This is fine because undefined !=
-		// 11000 and the else condition will be triggered.
+		// Error code 11000 is a uniqueness constraint violation.  The error
+		// object may not contain a code parameter, in which error.code will be
+		// undefined.  This is fine because undefined != 11000 and the else
+		// condition will be triggered.
 		if (error.code == 11000)
 			message = "User already exists";
 		else

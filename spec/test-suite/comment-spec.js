@@ -336,9 +336,9 @@ describe ("Comment endpoint tests:", function () {
 			it ("Comment id must be valid.", async function () {
 				const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
 				const endpoints = [
-					// Malformed post id.
+					// Malformed comment id.
 					deleteEndpoint + '/DEADBEEF',
-					// Nonexistent post id.
+					// Nonexistent comment id.
 					deleteEndpoint + '/12345678DEADBEEF98765432'
 				];
 

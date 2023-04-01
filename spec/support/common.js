@@ -338,15 +338,25 @@ async function loadRandomPostsAndLikes (min_posts, min_likes) {
 			if (! like_post)
 				continue;
 
-			// This shouldn't happen, so throw an error to signify a bug in the
-			// function.
+			// This shouldn't happen, so throw an error to signify a bug.
 			if (like_user.id == like_post.owner.toString ())
 				throw "Can't like own post";
 
 			const like_params = {post: like_post, backer: like_user};
-			await LikeModel.create (like_params);
 
-			n_likes++;
+			try {
+				await LikeModel.create (like_params);
+				n_likes++;
+			}
+			catch (error) {
+				// The selection process may attempt to duplicate a like on a
+				// post.  If so, ignore it and continue, otherwise there is a
+				// bug.
+				if (error.code == 11000)
+					continue;
+				else
+					throw error;
+			}
 		}
 	}
 }

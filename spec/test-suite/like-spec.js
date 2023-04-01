@@ -110,6 +110,40 @@ describe ("like test suite", function () {
 						});
 			});
 
+			it ("duplicate like", async function () {
+				await common.deleteTestLikes ();
+
+				for (const post of this.test_posts) {
+					const end_point = create_end_point + '/' + post.id;
+
+					for (const user of this.test_users) {
+						if (user.id == post.owner.id)
+							continue;
+
+						const auth_header = {headers: common.createTokenHeader (user.id)};
+
+						// The first like should be successful.
+						await axios.post (end_point, {}, auth_header)
+							.then (function (response) {
+								expect (response.status).toBe (200);
+							})
+							.catch (function (error) {
+								expect (true).toBe (false);
+							});
+
+						// The second like should fail.
+						await axios.post (end_point, {}, auth_header)
+							.then (function (response) {
+								expect (true).toBe (false);
+							})
+							.catch (function (error) {
+								console.log (error.response.data);
+								expect (error.response.status).toBe (400);
+							});
+					}
+				}
+			});
+
 			it ("valid parameters", async function () {
 				for (const post of this.test_posts) {
 					const end_point = create_end_point + '/' + post.id;

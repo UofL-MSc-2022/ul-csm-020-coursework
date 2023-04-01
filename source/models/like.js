@@ -11,4 +11,9 @@ const likeSchema = mongoose.Schema ({
 	backer: {type: mongoose.Schema.Types.ObjectId, ref: 'UserModel', required: true}
 }, {timestamps: {createdAt: true, updatedAt: false}});
 
+// Make post and backer a compound unique index so that if a user tries to like
+// the same post twice, Mongoose will throw an error preventing the duplicate
+// like.
+likeSchema.index ({post: 1, backer: 1}, {unique: true});
+
 module.exports.LikeModel = mongoose.model ('likes', likeSchema);

@@ -4,7 +4,7 @@ const bcryptjs = require ('bcryptjs');
 
 // Create the schema for User objects.  Set select=false for email and password
 // so that they will not appear in a query result (and by extension, an API
-// response).  Make email and unique index so that if a user tries to register
+// response).  Make email a unique index so that if a user tries to register
 // with an existing email address, Mongoose will throw an error preventing the
 // duplicate registration.  Setting the timestamps option allows Mongoose to
 // manage createdAt and updatedAt times automatically.

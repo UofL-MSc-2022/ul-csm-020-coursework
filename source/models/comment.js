@@ -1,14 +1,16 @@
 const mongoose = require ('mongoose');
 const joi = require ('joi');
 
-// Create the schema for Comment objects.  Setting the timestamps option allows
-// Mongoose to manage createdAt and updatedAt times automatically.
+// Create the schema for Comment objects.  Hide __v from queries and API
+// responses.  Setting the timestamps option allows Mongoose to manage
+// createdAt and updatedAt times automatically.
 const commentSchema = mongoose.Schema ({
 	// Foreign key to the posts collection.
 	post: {type: mongoose.Schema.Types.ObjectId, ref: 'PostModel', required: true},
 	body: {type: String, required: true, min: 3, max: 1024},
 	// Foreign key to the users collection.
-	author: {type: mongoose.Schema.Types.ObjectId, ref: 'UserModel', required: true}
+	author: {type: mongoose.Schema.Types.ObjectId, ref: 'UserModel', required: true},
+	__v: {type: Number, select: false}
 }, {timestamps: true});
 
 // Create a list of validation fields in the model file since the parameters

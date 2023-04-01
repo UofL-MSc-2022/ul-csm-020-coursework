@@ -47,10 +47,10 @@ describe ("Post endpoint tests:", function () {
 				});
 	});
 
-	// Verify that only the owner of a post can update or delete a post.
+	// Verify that only the owner of a post can update or delete it.
 	it ("Only the post owner can update or delete a post.", async function () {
 		for (const user of this.testUsers) {
-			const authHeader = common.createTokenHeader (user.id);
+			const header = common.createTokenHeader (user.id);
 
 			for (const post of this.testPosts) {
 				// Skip the owner.
@@ -75,7 +75,7 @@ describe ("Post endpoint tests:", function () {
 						method: params.method,
 						url: params.endpoint,
 						data: params.params,
-						headers: authHeader
+						headers: header
 					};
 
 					await axios (requestConfig)
@@ -95,8 +95,8 @@ describe ("Post endpoint tests:", function () {
 		// Short parameter values.
 		const minParams = {title: "a", body: "a"};
 
-		// Long parameter values, based on max lengths extracted from
-		// validation field arrays.
+		// Long parameter values, based on max lengths extracted from the
+		// validation field array.
 		const maxParams = {
 			title: "a".repeat (common.maxValidLength (postValidationFields, 'title') + 1),
 			body: "a".repeat (common.maxValidLength (postValidationFields, 'body') + 1)
@@ -169,10 +169,12 @@ describe ("Post endpoint tests:", function () {
 		});
 
 		describe ("Read tests:", function () {
-			// Verify that required fields are enforced.
-			it ("Request must include all required parameters.", async function () {
+			// Verify that the read endpoint requires a post id.
+			it ("Request must include a post id.", async function () {
 				const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
 
+				// Make the request without adding a post id to the
+				// readEndpoint.
 				await axios.get (readEndpoint, header)
 					.then (function (res) {
 						expect (true).toBe (false);
@@ -182,12 +184,15 @@ describe ("Post endpoint tests:", function () {
 					});
 			});
 
-			// Verify that the Post id is valid.
-			it ("Post ID must be valid.", async function () {
+			// Verify that the post id is valid.
+			it ("Post id must be valid.", async function () {
 				const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
 				const endpoints = [
-					readEndpoint + '/DEADBEEF', // Malformed Post id
-					readEndpoint + '/12345678DEADBEEF98765432' ]; // Nonexistent Post id
+					// Malformed post id.
+					readEndpoint + '/DEADBEEF',
+					// Nonexistent Post id.
+					readEndpoint + '/12345678DEADBEEF98765432'
+				];
 
 				for (endpoint of endpoints)
 					await axios.get (endpoint, header)
@@ -340,7 +345,7 @@ describe ("Post endpoint tests:", function () {
 
 		describe ("Delete tests:", function () {
 			// Verify that the delete endpoint requires a post id.
-			it ("Request must include all required parameters.", async function () {
+			it ("Request must include a post id.", async function () {
 				const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
 
 				// Make the request without adding a post id to the
@@ -354,12 +359,15 @@ describe ("Post endpoint tests:", function () {
 					});
 			});
 
-			// Verify that the Post id is valid.
-			it ("Post ID must be valid.", async function () {
+			// Verify that the post id is valid.
+			it ("Post id must be valid.", async function () {
 				const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
 				const endpoints = [
-					deleteEndpoint + '/DEADBEEF', // Malformed Post id
-					deleteEndpoint + '/12345678DEADBEEF98765432' ]; // Nonexistent Post id
+					// Malformed post id.
+					deleteEndpoint + '/DEADBEEF',
+					// Nonexistent post id.
+					deleteEndpoint + '/12345678DEADBEEF98765432'
+				];
 
 				for (endpoint of endpoints)
 					await axios.delete (endpoint, header)
@@ -409,7 +417,7 @@ describe ("Post endpoint tests:", function () {
 	});
 
 	describe ("List tests:", function () {
-		beforeAll (async function () {
+		beforeAll (function () {
 			// Add matcher that verifies post ordering.
 			jasmine.addMatchers ({toHaveCorrectPostOrder: common.postOrderMatcher});
 		});

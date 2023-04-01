@@ -2,16 +2,25 @@ const mongoose = require ('mongoose');
 const joi = require ('joi');
 const bcryptjs = require ('bcryptjs');
 
+// Create the schema for User objects.  Set select=false for email and password
+// so that they will not appear in a query result (and by extension, an API
+// response).  Make email and unique index so that if a user tries to register
+// with an existing email address, Mongoose will throw an error preventing the
+// duplicate registration.  Setting the timestamps option allows Mongoose to
+// manage createdAt and updatedAt times automatically.
 const userSchema = mongoose.Schema ({
-	screen_name: { type: String, required: true, min: 3, max: 256 },
-	email: { type: String, index: true, unique: true, required: true, select: false, min: 6, max: 256 },
-	password: { type: String, required: true, select: false, min: 6, max: 1024 }
+	screen_name: {type: String, required: true, min: 3, max: 256},
+	email: {type: String, index: true, unique: true, required: true, select: false, min: 6, max: 256},
+	password: {type: String, required: true, select: false, min: 6, max: 1024}
 }, {timestamps: true});
 
+// User object member method which validates a given password.
 userSchema.methods.validPassword = async function (password) {
 	return await bcryptjs.compare (password, this.password);
 };
 
+// Create a list of validation fields in the model file since the parameters
+// are taken directly from the model schema.
 const userValidationFields = {
 	screen_name: joi.string ().required ()
 		.min (userSchema.obj.screen_name.min).max (userSchema.obj.screen_name.max),
@@ -24,6 +33,7 @@ const userValidationFields = {
 
 const UserModel = mongoose.model ('users', userSchema);
 
+// Helper function to keep the User creation logic in the model module.
 async function createUser (screen_name, email, password_plain) {
 	const salt = await bcryptjs.genSalt (5);
 	const password_crypt = await bcryptjs.hash (password_plain, salt);

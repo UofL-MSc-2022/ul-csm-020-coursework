@@ -1,40 +1,38 @@
 const axios = require ("axios");
 
 const common = require ('../support/common');
-const { LikeModel } = require ('../../source/models/like');
+const {LikeModel} = require ('../../source/models/like');
 
 common.initTestSuite ();
 
-describe ("like test suite", function () {
-	const end_point_base = common.TEST_APP_BASE_URL + '/api/like';
-	const create_end_point = end_point_base + '/create';
-	const delete_end_point = end_point_base + '/delete';
-	const list_end_point = end_point_base + '/list';
+describe ("Like endpoint tests:", function () {
+	const endpointBase = common.BASE_URL + '/api/like';
+	const createEndpoint = endpointBase + '/create';
+	const deleteEndpoint = endpointBase + '/delete';
+	const listEndpoint = endpointBase + '/list';
 
+	// All tests in this suite require existing users and posts.
 	beforeAll (common.connectToTestDB);
 	beforeEach (async function () {
-		this.test_users = await common.reloadTestUsers ();
-		this.test_posts = await common.reloadTestPosts ();
+		this.testUsers = await common.reloadTestUsers ();
+		this.testPosts = await common.reloadTestPosts ();
 	});
 
-	it ("verify auth required", async function () {
-		const end_points = [
-			{
-				method: 'post',
-				url: create_end_point + '/DEADBEEF' },
-			{
-				method: 'delete',
-				url: delete_end_point + '/DEADBEEF' },
-			{
-				method: 'get',
-				url: list_end_point + '/all' },
-			{
-				method: 'get',
-				url: list_end_point + '/user' } ];
+	// Verify that all endpoints require an auth token.
+	it ("All endpoints require authorisation.", async function () {
+		// Endpoints that take an ObjectID as a parameter can use a nonsense
+		// value, since the authorisation check happens before parameter
+		// validation.
+		const endpoints = [
+			{method: 'post', url: createEndpoint + '/DEADBEEF'},
+			{method: 'delete', url: deleteEndpoint + '/DEADBEEF'},
+			{method: 'get', url: listEndpoint + '/all'},
+			{method: 'get', url: listEndpoint + '/user'}
+		];
 
-		for (const end_point of end_points)
-			await axios ({method: end_point.method, url: end_point.url})
-				.then (function (response) {
+		for (const endpoint of endpoints)
+			await axios ({method: endpoint.method, url: endpoint.url})
+				.then (function (res) {
 					expect (true).toBe (false);
 				})
 				.catch (function (error) {
@@ -42,12 +40,13 @@ describe ("like test suite", function () {
 				});
 	});
 
-	it ("wrong user, create", async function () {
-		for (const post of this.test_posts) {
-			const auth_header = {headers: common.createTokenHeader (post.owner)};
-			const end_point = create_end_point + '/' + post.id;
+	// Verify that the owner of a post cannot like the post.
+	it ("The post owner cannot like the post.", async function () {
+		for (const post of this.testPosts) {
+			const header = {headers: common.createTokenHeader (post.owner)};
+			const endpoint = createEndpoint + '/' + post.id;
 
-			await axios.post (end_point, {}, auth_header)
+			await axios.post (endpoint, {}, header)
 				.then (function (response) {
 					expect (true).toBe (false);
 				})
@@ -57,19 +56,22 @@ describe ("like test suite", function () {
 		}
 	});
 
-	it ("wrong user, delete", async function () {
-		const test_likes = await common.reloadTestLikes ();
+	// Verify that only the backer of a like can delete it.
+	it ("Only the like backer can delete a like.", async function () {
+		// Load the database with likes to delete.
+		const testLikes = await common.reloadTestLikes ();
 
-		for (const like of test_likes) {
-			const end_point = delete_end_point + '/' + like.id;
+		for (const like of testLikes) {
+			const endpoint = deleteEndpoint + '/' + like.id;
 
-			for (const user of this.test_users) {
+			for (const user of this.testUsers) {
+				// Skip the backer.
 				if (like.backer.id == user.id)
 					continue;
 
-				const auth_header = {headers: common.createTokenHeader (user.id)};
+				const header = {headers: common.createTokenHeader (user.id)};
 
-				await axios.delete (end_point, auth_header)
+				await axios.delete (endpoint, header)
 					.then (function (response) {
 						expect (true).toBe (false);
 					})
@@ -80,13 +82,17 @@ describe ("like test suite", function () {
 		}
 	});
 
-	describe ("verify CRUD methods", function () {
-		describe ("create tests", function () {
-			it ("missing parameters", async function () {
-				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
+	// Test all CRUD methods.
+	describe ("CRUD tests:", function () {
+		describe ("Create tests:", function () {
+			// Verify that the create endpoint requires a post id.
+			it ("Request must include a post id.", async function () {
+				const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
 
-				await axios.post (create_end_point, {}, auth_header)
-					.then (function (response) {
+				// Make the request without adding a post id to the
+				// createEndpoint.
+				await axios.post (createEndpoint, {}, header)
+					.then (function (res) {
 						expect (true).toBe (false);
 					})
 					.catch (function (error) {
@@ -94,15 +100,19 @@ describe ("like test suite", function () {
 					});
 			});
 
-			it ("invalid parameters", async function () {
-				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
-				const end_points = [
-					create_end_point + '/DEADBEEF', // Malformed ObjectID
-					create_end_point + '/12345678DEADBEEF98765432' ]; // Nonexistent ObjectID
+			// Verify that the post id is valid.
+			it ("post id must be valid.", async function () {
+				const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
+				const endpoints = [
+					// Malformed post id.
+					createEndpoint + '/DEADBEEF',
+					// Nonexistent post id.
+					createEndpoint + '/12345678DEADBEEF98765432'
+				];
 
-				for (end_point of end_points)
-					await axios.post (end_point, {}, auth_header)
-						.then (function (response) {
+				for (endpoint of endpoints)
+					await axios.post (endpoint, {}, header)
+						.then (function (res) {
 							expect (true).toBe (false);
 						})
 						.catch (function (error) {
@@ -110,72 +120,77 @@ describe ("like test suite", function () {
 						});
 			});
 
-			it ("duplicate like", async function () {
-				await common.deleteTestLikes ();
+			// User can like a post.
+			it ("Users can like posts.", async function () {
+				for (const post of this.testPosts) {
+					const endpoint = createEndpoint + '/' + post.id;
 
-				for (const post of this.test_posts) {
-					const end_point = create_end_point + '/' + post.id;
-
-					for (const user of this.test_users) {
+					for (const user of this.testUsers) {
+						// Skip the owner.
 						if (user.id == post.owner.id)
 							continue;
 
-						const auth_header = {headers: common.createTokenHeader (user.id)};
+						const header = {headers: common.createTokenHeader (user.id)};
+
+						await axios.post (endpoint, {}, header)
+							.then (function (res) {
+								expect (res.status).toBe (200);
+								expect (res.data.post).toBe (post.id);
+								expect (res.data.backer).toBe (user.id);
+							})
+							.catch (function (error) {
+								expect (true).toBe (false);
+							});
+					}
+				}
+			});
+
+			// Verify that a user cannot like the same post twice.
+			it ("Users cannot duplicate likes.", async function () {
+				// Clear the database of likes.
+				await common.deleteTestLikes ();
+
+				for (const post of this.testPosts) {
+					const endpoint = createEndpoint + '/' + post.id;
+
+					for (const user of this.testUsers) {
+						// Skip the owner.
+						if (user.id == post.owner.id)
+							continue;
+
+						const header = {headers: common.createTokenHeader (user.id)};
 
 						// The first like should be successful.
-						await axios.post (end_point, {}, auth_header)
-							.then (function (response) {
-								expect (response.status).toBe (200);
+						await axios.post (endpoint, {}, header)
+							.then (function (res) {
+								expect (res.status).toBe (200);
 							})
 							.catch (function (error) {
 								expect (true).toBe (false);
 							});
 
 						// The second like should fail.
-						await axios.post (end_point, {}, auth_header)
-							.then (function (response) {
+						await axios.post (endpoint, {}, header)
+							.then (function (res) {
 								expect (true).toBe (false);
 							})
 							.catch (function (error) {
-								console.log (error.response.data);
 								expect (error.response.status).toBe (400);
-							});
-					}
-				}
-			});
-
-			it ("valid parameters", async function () {
-				for (const post of this.test_posts) {
-					const end_point = create_end_point + '/' + post.id;
-
-					for (const user of this.test_users) {
-						if (user.id == post.owner.id)
-							continue;
-
-						const auth_header = {headers: common.createTokenHeader (user.id)};
-
-						await axios.post (end_point, {}, auth_header)
-							.then (function (response) {
-								expect (response.status).toBe (200);
-								expect (response.data ['post']).toBe (post.id);
-								expect (response.data ['backer']).toBe (user.id);
-							})
-							.catch (function (error) {
-								expect (true).toBe (false);
 							});
 					}
 				}
 			});
 		});
 
-		describe ("delete tests", function () {
-			beforeEach (async function () { this.test_likes = await common.reloadTestLikes (); });
+		describe ("Delete tests:", function () {
+			// Verify that the delete endpoint requires a like id.
+			it ("Request must include a like id.", async function () {
+				const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
 
-			it ("missing parameters", async function () {
-				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
-
-				await axios.delete (delete_end_point, auth_header)
-					.then (function (response) {
+				// Make the request without adding a comment id to the
+				// deleteEndpoint.
+				await axios.delete (deleteEndpoint, header)
+					.then (function (res) {
 						expect (true).toBe (false);
 					})
 					.catch (function (error) {
@@ -183,15 +198,19 @@ describe ("like test suite", function () {
 					});
 			});
 
-			it ("invalid parameters", async function () {
-				const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
-				const end_points = [
-					delete_end_point + '/DEADBEEF', // Malformed ObjectID
-					delete_end_point + '/12345678DEADBEEF98765432' ]; // Nonexistent ObjectID
+			// Verify that the like id is valid.
+			it ("Like id must be valid.", async function () {
+				const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
+				const endpoints = [
+					// Malformed like id.
+					deleteEndpoint + '/DEADBEEF',
+					// Nonexistent like id.
+					deleteEndpoint + '/12345678DEADBEEF98765432'
+				];
 
-				for (end_point of end_points)
-					await axios.delete (end_point, auth_header)
-						.then (function (response) {
+				for (endpoint of endpoints)
+					await axios.delete (endpoint, header)
+						.then (function (res) {
 							expect (true).toBe (false);
 						})
 						.catch (function (error) {
@@ -199,15 +218,19 @@ describe ("like test suite", function () {
 						});
 			});
 
-			it ("valid parameters", async function () {
-				for (const like of this.test_likes) {
-					const auth_header = {headers: common.createTokenHeader (like.backer)};
-					const end_point = delete_end_point + '/' + like.id;
+			// Test that like deletion works.
+			it ("Users can delete likes.", async function () {
+				// Load the database with like to delete.
+				const testLikes = await common.reloadTestLikes ();
 
-					await axios.delete (end_point, auth_header)
-						.then (function (response) {
-							expect (response.status).toBe (200);
-							expect (response.data.deletedCount).toBe (1);
+				for (const like of testLikes) {
+					const header = {headers: common.createTokenHeader (like.backer)};
+					const endpoint = deleteEndpoint + '/' + like.id;
+
+					await axios.delete (endpoint, header)
+						.then (function (res) {
+							expect (res.status).toBe (200);
+							expect (res.data.deletedCount).toBe (1);
 						})
 						.catch (function (error) {
 							expect (true).toBe (false);
@@ -217,19 +240,24 @@ describe ("like test suite", function () {
 		});
 	});
 
-	describe ("list tests", function () {
+	describe ("List tests:", function () {
 		beforeAll (function () {
-			jasmine.addMatchers ({ toHaveAscendingCreationTimes: common.ascendingCreationTimesMatcher });
+			// Add matcher that verifies like ordering.
+			jasmine.addMatchers ({
+				toHaveAscendingCreationTimes: common.ascendingCreationTimesMatcher
+			});
 		});
 
-		beforeEach (async function () { this.test_likes = await common.reloadTestLikes (); });
+		// All tests in this suite require existing likes.
+		beforeEach (async function () { this.testLikes = await common.reloadTestLikes (); });
 
-		it ("invalid scope", async function () {
-			const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
-			const end_point = list_end_point + '/asdf';
+		// Verify that the scope must be valid.
+		it ("Scope is not 'all' or 'user'.", async function () {
+			const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
+			const endpoint = listEndpoint + '/not_a_valid_scope';
 
-			await axios.get (end_point, auth_header)
-				.then (function (response) {
+			await axios.get (endpoint, header)
+				.then (function (res) {
 					expect (true).toBe (false);
 				})
 				.catch (function (error) {
@@ -237,38 +265,40 @@ describe ("like test suite", function () {
 				});
 		});
 
-		it ("all scope", async function () {
-			const auth_header = {headers: common.createTokenHeader (this.test_users [0].id)};
-			const end_point = list_end_point + '/all';
+		// Verify the result of listing all likes, including ordering.
+		it ("Scope is 'all'.", async function () {
+			const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
+			const endpoint = listEndpoint + '/all';
 
-			await axios.get (end_point, auth_header)
-				.then (async function (response) {
-					expect (response.status).toBe (200);
+			await axios.get (endpoint, header)
+				.then (async function (res) {
+					expect (res.status).toBe (200);
 
-					const n_expected = await LikeModel.countDocuments ();
-					expect (response.data.length).toBe (n_expected);
+					const nExpected = await LikeModel.countDocuments ();
+					expect (res.data.length).toBe (nExpected);
 
-					expect (response.data).toHaveAscendingCreationTimes ();
+					expect (res.data).toHaveAscendingCreationTimes ();
 				})
 				.catch (function (error) {
 					expect (true).toBe (false);
 				});
 		});
 
-		it ("user scope", async function () {
-			const end_point = list_end_point + '/user';
+		// Verify the result of listing user's comments, including ordering.
+		it ("Scope is 'user'.", async function () {
+			const endpoint = listEndpoint + '/user';
 
-			for (const user of this.test_users) {
-				const auth_header = {headers: common.createTokenHeader (user.id)};
+			for (const user of this.testUsers) {
+				const header = {headers: common.createTokenHeader (user.id)};
 
-				await axios.get (end_point, auth_header)
-					.then (async function (response) {
-						expect (response.status).toBe (200);
+				await axios.get (endpoint, header)
+					.then (async function (res) {
+						expect (res.status).toBe (200);
 
-						const n_expected = await LikeModel.countDocuments ({backer: user});
-						expect (response.data.length).toBe (n_expected);
+						const nExpected = await LikeModel.countDocuments ({backer: user});
+						expect (res.data.length).toBe (nExpected);
 
-						expect (response.data).toHaveAscendingCreationTimes ();
+						expect (res.data).toHaveAscendingCreationTimes ();
 					})
 					.catch (function (error) {
 						expect (true).toBe (false);

@@ -12,7 +12,7 @@ common.initTestSuite ();
 // won't appear as a failure to Jasmine.  The above expect() is guaranteed to
 // fail, this ensures that the spec fails when it should.
 
-fdescribe ("Registration tests:", function () {
+describe ("Registration tests:", function () {
 	const endpoint = common.BASE_URL + '/api/user/register';
 
 	// Verify that required fields are enforced.
@@ -199,23 +199,23 @@ fdescribe ("Registration tests:", function () {
 	});
 });
 
-describe ("sign-in test suite", function () {
+describe ("Sign-in tests:", function () {
 	const endpoint = common.BASE_URL + '/api/user/sign-in';
 
+	// All tests in this suite require existing users in the database.
 	beforeAll (common.connectToTestDB);
 	beforeEach ( async function () { this.testUsers = await common.reloadTestUsers (); });
 
-	it ("bad parameters", async function () {
-		const params = [
-			{
-				email: "bademail#mail.com",
-				password: this.testUsers[0].passwordPlain },
-			{
-				email: this.testUsers[0].email,
-				password: "p" } ];
+	// Verify that parameters must pass validation.
+	it ("Parameters must pass validation.", async function () {
+		// Test for malformed email and short password.
+		const testParams = [
+			{email: "bademail#mail.com", password: this.testUsers[0].passwordPlain},
+			{email: this.testUsers[0].email, password: "p"}
+		];
 
-		for (const p of params) {
-			await axios.post (endpoint, p)
+		for (const params of testParams) {
+			await axios.post (endpoint, params)
 				.then (function (res) {
 					expect (true).toBe (false);
 				})
@@ -225,17 +225,23 @@ describe ("sign-in test suite", function () {
 		}
 	});
 
-	it ("invalid credentials", async function () {
-		const params = [
+	// Verify that sign-in fails with invalid credentials.
+	it ("Sign-in requires valid credentials.", async function () {
+		// Test for wrong email/correct password and correct email/wrong
+		// password.
+		const testParams = [
 			{
 				email: "not_" + this.testUsers[0].email,
-				password: this.testUsers[0].password },
+				password: this.testUsers[0].password
+			},
 			{
 				email: this.testUsers[0].email,
-				password: "not_" + this.testUsers[0].password } ];
+				password: "not_" + this.testUsers[0].password
+			}
+		];
 
-		for (const p of params) {
-			await axios.post (endpoint, p)
+		for (const params of testParams) {
+			await axios.post (endpoint, params)
 				.then (function (res) {
 					expect (true).toBe (false);
 				})
@@ -245,7 +251,8 @@ describe ("sign-in test suite", function () {
 		}
 	});
 
-	it ("valid credentials", async function () {
+	// Verify that sign-in succeeds with valid credentials.
+	it ("Sign-invalid credentials", async function () {
 		for (const user of this.testUsers) {
 			const params = {
 				email: user.email,
@@ -254,6 +261,7 @@ describe ("sign-in test suite", function () {
 			await axios.post (endpoint, params)
 				.then (async function (res) {
 					expect (res.status).toBe (200);
+					expect (res.data['auth-token']).toBeDefined ();
 				})
 				.catch (function (error) {
 					expect (true).toBe (false);

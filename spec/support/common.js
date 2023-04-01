@@ -13,7 +13,7 @@ const {LikeModel} = require ('../../source/models/like');
 // JWT utility
 const {createAccessToken} = require ('../../source/auth/jwt');
 
-const TEST_APP_BASE_URL = "http://" + process.env.APP_HOST + ":" + process.env.APP_PORT;
+const BASE_URL = "http://" + process.env.APP_HOST + ":" + process.env.APP_PORT;
 
 const sample_test_data = {
 	users: [
@@ -435,7 +435,7 @@ function postOrderMatcher (matchersUtil) {
 	};
 }
 
-module.exports.TEST_APP_BASE_URL = TEST_APP_BASE_URL;
+module.exports.BASE_URL = BASE_URL;
 module.exports.initTestSuite = initTestSuite;
 module.exports.connectToTestDB = connectToTestDB;
 module.exports.maxValidLength = maxValidLength;

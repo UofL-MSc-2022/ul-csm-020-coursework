@@ -15,7 +15,7 @@ const {createAccessToken} = require ('../../source/auth/jwt');
 
 const BASE_URL = "http://" + process.env.APP_HOST + ":" + process.env.APP_PORT;
 
-const sample_test_data = {
+const sampleTestData = {
 	users: [
 		{screen_name: "Olga", email: "olga@miniwall.com", password: "olgapass"},
 		{screen_name: "Nick", email: "nick@miniwall.com", password: "nickpass"},
@@ -79,7 +79,7 @@ const sample_test_data = {
 
 // Initialize test features needed for every suite.
 function initTestSuite () {
-	jasmine_env = jasmine.getEnv ();
+	jasmineEnv = jasmine.getEnv ();
 
 	// The default test output shows a single '.' for every spec run.  To
 	// verify that every expect() function has been run, a custom test reporter
@@ -87,14 +87,14 @@ function initTestSuite () {
 	// possible to add duplicate reporters and initTestSuite() is called by
 	// every spec file, therefore set a property on the Jasmine environment
 	// object to prevent duplication.
-	if (! ('verbose_reporter_added' in jasmine_env))
-		jasmine_env.verbose_reporter_added = false;
+	if (! ('verboseReporterAdded' in jasmineEnv))
+		jasmineEnv.verboseReporterAdded = false;
 
 	// Only add the VerboseReporter if configured, and if it hasn't already
 	// been added.
-	if (config.get ('verbose_testing') && ! jasmine_env.verbose_reporter_added) {
-		jasmine_env.addReporter (VerboseReporter);
-		jasmine_env.verbose_reporter_added = true;
+	if (config.get ('verbose_testing') && ! jasmineEnv.verboseReporterAdded) {
+		jasmineEnv.addReporter (VerboseReporter);
+		jasmineEnv.verboseReporterAdded = true;
 	}
 
 	// The default timeout for every spec is 5000ms.  However, some specs in
@@ -120,29 +120,30 @@ function maxValidLength (fields, key) {
 }
 
 // Helper function to generate the auth HTTP request header.
-function createTokenHeader (user_id) {
-	return {Authorization: 'Bearer ' + createAccessToken (user_id)};
+function createTokenHeader (userID) {
+	return {Authorization: 'Bearer ' + createAccessToken (userID)};
 }
 
 // Clear the test database of all existing users.
 async function deleteTestUsers () {
-	delete_response = await UserModel.deleteMany ();
+	const deleteResponse = await UserModel.deleteMany ();
 
 	// Output a summary of the database clear if verbose_testing is configured.
 	if (config.get ('verbose_testing'))
-		console.log ("users collection cleared, " + delete_response.deletedCount + " removed");
+		console.log ("users collection cleared, " + deleteResponse.deletedCount + " removed");
 }
 
 // Load a user fixture and return the list of UserModel objects.
 async function createTestUsers () {
-	let test_users = [];
-	for (const params of sample_test_data.users) {
-		test_user = await createUser (params.screen_name, params.email, params.password);
-		test_user.password_plain = params.password;
-		test_users.push (test_user);
+	let testUsers = [];
+	for (const params of sampleTestData.users) {
+		testUser = await createUser (params.screen_name, params.email, params.password);
+		// The plaintext password is needed by specs.
+		testUser.passwordPlain = params.password;
+		testUsers.push (testUser);
 	}
 
-	return test_users;
+	return testUsers;
 }
 
 // Clear the users collection and load the users fixture.
@@ -153,41 +154,41 @@ async function reloadTestUsers () {
 
 // Clear the test database of all existing posts.
 async function deleteTestPosts () {
-	delete_response = await PostModel.deleteMany ();
+	const deleteResponse = await PostModel.deleteMany ();
 
 	// Output a summary of the database clear if verbose_testing is configured.
 	if (config.get ('verbose_testing'))
-		console.log ("posts collection cleared, " + delete_response.deletedCount + " removed");
+		console.log ("posts collection cleared, " + deleteResponse.deletedCount + " removed");
 }
 
 // Load a post fixture and return the list of PostModel objects.  The user
 // fixture must already be loaded.
 async function createTestPosts () {
 	// Retrieve loaded users.
-	const test_users = await UserModel.find ();
+	const testUsers = await UserModel.find ();
 
-	let test_posts = [];
+	let testPosts = [];
 	let i = 0;
 	let j = 0;
-	for (const user of test_users) {
+	for (const user of testUsers) {
 		// Give each user two posts.
 		for (j=0; j<2; j++) {
 			params = {
-				title: sample_test_data.posts[i + j].title,
-				body: sample_test_data.posts[i + j].body,
+				title: sampleTestData.posts[i + j].title,
+				body: sampleTestData.posts[i + j].body,
 				owner: user
 			};
 
-			test_posts.push (await PostModel.create (params));
+			testPosts.push (await PostModel.create (params));
 		}
 
 		i += j;
 	}
 
 	// Hydrate the owner field for each post object.
-	await PostModel.populate (test_posts, {path: 'owner', model: UserModel});
+	await PostModel.populate (testPosts, {path: 'owner', model: UserModel});
 
-	return test_posts;
+	return testPosts;
 }
 
 // Clear the posts collection and load the posts fixture.
@@ -198,25 +199,25 @@ async function reloadTestPosts () {
 
 // Clear the test database of all existing comments.
 async function deleteTestComments () {
-	delete_response = await CommentModel.deleteMany ();
+	const deleteResponse = await CommentModel.deleteMany ();
 
 	// Output a summary of the database clear if verbose_testing is configured.
 	if (config.get ('verbose_testing'))
-		console.log ("comments collection cleared, " + delete_response.deletedCount + " removed");
+		console.log ("comments collection cleared, " + deleteResponse.deletedCount + " removed");
 }
 
 // Load a comment fixture and return the list of CommentModel objects.  The
 // user and post fixtures must already be loaded.
 async function createTestComments () {
 	// Retrieve loaded users and posts.
-	const test_users = await UserModel.find ();
-	const test_posts = await PostModel.find ().populate ({path: 'owner', model: UserModel});
+	const testUsers = await UserModel.find ();
+	const testPosts = await PostModel.find ().populate ({path: 'owner', model: UserModel});
 
-	let test_comments = [];
+	let testComments = [];
 	let i = 0;
 	let j = 0;
-	for (const post of test_posts) {
-		for (const user of test_users) {
+	for (const post of testPosts) {
+		for (const user of testUsers) {
 			// Avoid users commenting on posts they own.
 			if (user.id == post.owner.id)
 				continue;
@@ -225,11 +226,11 @@ async function createTestComments () {
 			for (j=0; j<2; j++) {
 				params = {
 					post: post,
-					body: sample_test_data.comments[i + j].body,
+					body: sampleTestData.comments[i + j].body,
 					author: user
 				};
 
-				test_comments.push (await CommentModel.create (params));
+				testComments.push (await CommentModel.create (params));
 			}
 
 			i += j;
@@ -237,9 +238,9 @@ async function createTestComments () {
 	}
 
 	// Hydrate the author field for each comment object.
-	await CommentModel.populate (test_comments, {path: 'author', model: UserModel});
+	await CommentModel.populate (testComments, {path: 'author', model: UserModel});
 
-	return test_comments;
+	return testComments;
 }
 
 // Clear the comments collection and load the comments fixture.
@@ -250,35 +251,35 @@ async function reloadTestComments () {
 
 // Clear the test database of all existing likes.
 async function deleteTestLikes () {
-	delete_response = await LikeModel.deleteMany ();
+	const deleteResponse = await LikeModel.deleteMany ();
 
 	// Output a summary of the database clear if verbose_testing is configured.
 	if (config.get ('verbose_testing'))
-		console.log ("likes collection cleared, " + delete_response.deletedCount + " removed");
+		console.log ("likes collection cleared, " + deleteResponse.deletedCount + " removed");
 }
 
 // Load a like fixture and return the list of LikeModel objects.  The user and
 // post fixtures must already be loaded.
 async function createTestLikes () {
-	const test_users = await UserModel.find ();
-	const test_posts = await PostModel.find ().populate ({path: 'owner', model: UserModel});
+	const testUsers = await UserModel.find ();
+	const testPosts = await PostModel.find ().populate ({path: 'owner', model: UserModel});
 
 	// Every user likes every post, except the ones they own.
-	let test_likes = [];
-	for (const post of test_posts) {
-		for (const user of test_users) {
+	let testLikes = [];
+	for (const post of testPosts) {
+		for (const user of testUsers) {
 			// Avoid users commenting on posts they own.
 			if (user.id == post.owner.id)
 				continue;
 
-			test_likes.push (await LikeModel.create ({post: post, backer: user}));
+			testLikes.push (await LikeModel.create ({post: post, backer: user}));
 		}
 	}
 
 	// Hydrate the backer field for each like object.
-	await LikeModel.populate (test_likes, {path: 'backer', model: UserModel});
+	await LikeModel.populate (testLikes, {path: 'backer', model: UserModel});
 
-	return test_likes;
+	return testLikes;
 }
 
 // Clear the likes collection and load the likes fixture.
@@ -290,63 +291,63 @@ async function reloadTestLikes () {
 // Some specs, e.g. specs that verify proper ordering, require test fixtures
 // that aren't as uniform as the ones above.  This loads a randomised selection
 // of posts and likes.  The number of posts and likes is random, but are
-// guaranteed to be greater than or equal to the min_posts and min_likes
+// guaranteed to be greater than or equal to the minPosts and minLikes
 // arguments.  The user fixture must already be loaded.
-async function loadRandomPostsAndLikes (min_posts, min_likes) {
-	const test_users = await UserModel.find ();
+async function loadRandomPostsAndLikes (minPosts, minLikes) {
+	const testUsers = await UserModel.find ();
 
 	// Clear the database of all existing posts and likes.
 	await deleteTestLikes ();
 	await deleteTestPosts ();
 
-	let n_posts = 0;
-	let n_likes = 0;
+	let nPosts = 0;
+	let nLikes = 0;
 
 	// Initialize an associated array of users to posts that they are eligible
 	// to like.
-	let likeable_posts = {};
-	for (user of test_users)
-		likeable_posts[user.id] = [];
+	let likeablePosts = {};
+	for (user of testUsers)
+		likeablePosts[user.id] = [];
 
 	// Lambda function to randomly select an item from a set.
 	const choose = (set) => { return set[Math.floor (Math.random () * set.length)]; };
 
 	// Continue through loop until minimum thresholds for both likes and posts
 	// has been reached.
-	while (n_posts < min_posts || n_likes < min_likes) {
-		const post_user = choose (test_users);
-		const post_data = choose (sample_test_data.posts);
-		const post_params = {title: post_data.title, body: post_data.body, owner: post_user};
-		const post = await PostModel.create (post_params);
+	while (nPosts < minPosts || nLikes < minLikes) {
+		const postUser = choose (testUsers);
+		const postData = choose (sampleTestData.posts);
+		const postParams = {title: postData.title, body: postData.body, owner: postUser};
+		const post = await PostModel.create (postParams);
 
-		for (const user of test_users) {
-			if (user.id == post_user.id)
+		for (const user of testUsers) {
+			if (user.id == postUser.id)
 				continue;
 
-			likeable_posts[user.id].push (post);
+			likeablePosts[user.id].push (post);
 		}
 
-		n_posts++;
+		nPosts++;
 
 		// Repeat like selection 3 times to have approximately 3 times more
 		// likes than posts.
 		for (let i=0; i<3; i++) {
-			const like_user = choose (test_users);
-			const like_post = choose (likeable_posts[like_user.id]);
+			const likeUser = choose (testUsers);
+			const likePost = choose (likeablePosts[likeUser.id]);
 
-			// This only happens if the user's likeable_posts array is empty.
-			if (! like_post)
+			// This only happens if the user's likeablePosts array is empty.
+			if (! likePost)
 				continue;
 
 			// This shouldn't happen, so throw an error to signify a bug.
-			if (like_user.id == like_post.owner.toString ())
+			if (likeUser.id == likePost.owner.toString ())
 				throw "Can't like own post";
 
-			const like_params = {post: like_post, backer: like_user};
+			const likeParams = {post: likePost, backer: likeUser};
 
 			try {
-				await LikeModel.create (like_params);
-				n_likes++;
+				await LikeModel.create (likeParams);
+				nLikes++;
 			}
 			catch (error) {
 				// The selection process may attempt to duplicate a like on a
@@ -367,12 +368,12 @@ function ascendingCreationTimesMatcher (matchersUtil) {
 	return {
 		// Matcher compare function signature takes two arguments, but this
 		// matcher only requires one.
-		compare: (object_array, _) => {
+		compare: (objectArray, _) => {
 			let result = {pass: true};
 
-			let t_0 = new Date (object_array[0].createdAt);
-			for (let i=1; i<object_array.length; i++) {
-				let t_1 = new Date (object_array[i].createdAt);
+			let t_0 = new Date (objectArray[0].createdAt);
+			for (let i=1; i<objectArray.length; i++) {
+				let t_1 = new Date (objectArray[i].createdAt);
 
 				if (t_1 < t_0) {
 					result.pass = false;
@@ -401,14 +402,14 @@ function postOrderMatcher (matchersUtil) {
 	return {
 		// Matcher compare function signature takes two arguments, but this
 		// matcher only requires one.
-		compare: (object_array, _) => {
+		compare: (objectArray, _) => {
 			let result = {pass: true, message: "Posts are ordered"};
 
-			let n_0 = object_array[0].n_likes;
-			let t_0 = new Date (object_array[0].createdAt);
-			for (let i=1; i<object_array.length; i++) {
-				let n_1 = object_array[i].n_likes;
-				let t_1 = new Date (object_array[i].createdAt);
+			let n_0 = objectArray[0].n_likes;
+			let t_0 = new Date (objectArray[0].createdAt);
+			for (let i=1; i<objectArray.length; i++) {
+				let n_1 = objectArray[i].n_likes;
+				let t_1 = new Date (objectArray[i].createdAt);
 
 				if (n_1 > n_0) {
 					result.pass = false;

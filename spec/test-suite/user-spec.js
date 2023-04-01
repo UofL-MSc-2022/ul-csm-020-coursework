@@ -55,8 +55,8 @@ describe ("Registration tests:", function () {
 		// Short parameter values.
 		const minParams = {screen_name: "a", email: "a@b.c", password: "a"};
 
-		// Long parameter values, based on max lengths extracted from
-		// validation field arrays.
+		// Long parameter values, based on max lengths extracted from the
+		// validation field array.
 		const maxParams = {
 			screen_name: "a".repeat (common.maxValidLength (userValidationFields, 'screen_name') + 1),
 			email: "a".repeat (common.maxValidLength (userValidationFields, 'email') + 1) + "@mail.com",

@@ -8,7 +8,7 @@ const {createAccessToken, verifyAccessToken} = require ('../../source/auth/jwt')
 
 common.initTestSuite ();
 
-fdescribe ("JWT auth tests:", function () {
+describe ("JWT auth tests:", function () {
 	// Sample endpoint for verifying auth.  It must be an endpoint that
 	// requires authorisation.
 	const sample_endpoint = common.BASE_URL + '/api/post/list/all';

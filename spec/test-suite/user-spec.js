@@ -1,35 +1,47 @@
 const axios = require ("axios");
 
 const common = require ('../support/common');
-const { userValidationFields } = require ('../../source/models/user');
-const { verifyAccessToken } = require ('../../source/auth/jwt');
+const {UserModel, userValidationFields} = require ('../../source/models/user');
 
 common.initTestSuite ();
 
-describe ("registration test suite", function () {
-	const end_point = common.TEST_APP_BASE_URL + '/api/user/register';
+// All axios requests include 'expect (true).toBe (false);' in one of the
+// callbacks.  For example, if a request is expected to succeed, the error call
+// back contains the above expect().  If a request fails when it is expected to
+// succeed the expect() calls in the success call back won't be called and they
+// won't appear as a failure to Jasmine.  The above expect() is guaranteed to
+// fail, this ensures that the spec fails when it should.
 
-	it ("missing required params", async function () {
-		const params = {
+fdescribe ("Registration tests:", function () {
+	const endpoint = common.BASE_URL + '/api/user/register';
+
+	// Verify that required fields are enforced.
+	it ("Request must include all required parameters.", async function () {
+		const paramValues = {
 			screen_name: 'screen_name',
 			email: 'email@mail.com',
-			password: 'password' };
+			password: 'password'
+		};
 
-		const key_subsets = [
+		// A list of all parameter subsets which are missing a required
+		// parameter.
+		const keySubsets = [
 			["screen_name"],
 			["email"],
 			["password"],
 			["screen_name", "email"],
 			["screen_name", "password"],
-			["email", "password"] ];
+			["email", "password"]
+		];
 
-		for (key_subset of key_subsets) {
-			param_subset = {};
-			for (key of key_subset)
-				param_subset [key] = params [key];
+		// Test each subset.
+		for (const keySubset of keySubsets) {
+			let paramSubset = {};
+			for (const key of keySubset)
+				paramSubset[key] = paramValues[key];
 
-			await axios.post (end_point, param_subset)
-				.then (function (response) {
+			await axios.post (endpoint, paramSubset)
+				.then (function (res) {
 					expect (true).toBe (false);
 				})
 				.catch (function (error) {
@@ -38,51 +50,64 @@ describe ("registration test suite", function () {
 		}
 	});
 
-	it ("invalid parameter lengths", async function () {
-		const min_params = {
-			screen_name: "a",
-			email: "a@b.c",
-			password: "a" };
+	// Verify that string parameters must conform to length constraints.
+	it ("Parameters must conform to length constraints.", async function () {
+		// Short parameter values.
+		const minParams = {screen_name: "a", email: "a@b.c", password: "a"};
 
-		const max_params = {
+		// Long parameter values, based on max lengths extracted from
+		// validation field arrays.
+		const maxParams = {
 			screen_name: "a".repeat (common.maxValidLength (userValidationFields, 'screen_name') + 1),
 			email: "a".repeat (common.maxValidLength (userValidationFields, 'email') + 1) + "@mail.com",
-			password: "a".repeat (common.maxValidLength (userValidationFields, 'password') + 1) };
+			password: "a".repeat (common.maxValidLength (userValidationFields, 'password') + 1)
+		};
 
-		const valid_params = {
+		// Parameter values with valid lengths.
+		const validParams = {
 			screen_name: 'screen_name',
 			email: 'email@mail.com',
-			password: 'password' };
+			password: 'password'
+		};
 
-		const test_params = [
+		// All parameter combinations with 1 invalid value.
+		const testParams = [
 			{
-				screen_name: min_params.screen_name,
-				email: valid_params.email,
-				password: valid_params.password },
+				screen_name: minParams.screen_name,
+				email: validParams.email,
+				password: validParams.password
+			},
 			{
-				screen_name: max_params.screen_name,
-				email: valid_params.email,
-				password: valid_params.password },
+				screen_name: maxParams.screen_name,
+				email: validParams.email,
+				password: validParams.password
+			},
 			{
-				screen_name: valid_params.screen_name,
-				email: min_params.email,
-				password: valid_params.password },
+				screen_name: validParams.screen_name,
+				email: minParams.email,
+				password: validParams.password
+			},
 			{
-				screen_name: valid_params.screen_name,
-				email: max_params.email,
-				password: valid_params.password },
+				screen_name: validParams.screen_name,
+				email: maxParams.email,
+				password: validParams.password
+			},
 			{
-				screen_name: valid_params.screen_name,
-				email: valid_params.email,
-				password: min_params.password },
+				screen_name: validParams.screen_name,
+				email: validParams.email,
+				password: minParams.password
+			},
 			{
-				screen_name: valid_params.screen_name,
-				email: valid_params.email,
-				password: max_params.password } ];
+				screen_name: validParams.screen_name,
+				email: validParams.email,
+				password: maxParams.password
+			}
+		];
 
-		for (params of test_params) {
-			await axios.post (end_point, params)
-				.then (function (response) {
+		// Test each combination.
+		for (params of testParams) {
+			await axios.post (endpoint, params)
+				.then (function (res) {
 					expect (true).toBe (false);
 				})
 				.catch (function (error) {
@@ -91,14 +116,16 @@ describe ("registration test suite", function () {
 		}
 	});
 
-	it ("invalid email", async function () {
+	// Verify properly formatted email addresses.
+	it ("Email must be the correct format.", async function () {
 		const params = {
 			screen_name: 'screen_name',
 			email: 'bademail#mail.com',
-			password: 'password' };
+			password: 'password'
+		};
 
-		await axios.post (end_point, params)
-			.then (function (response) {
+		await axios.post (endpoint, params)
+			.then (function (res) {
 				expect (true).toBe (false);
 			})
 			.catch (function (error) {
@@ -106,50 +133,64 @@ describe ("registration test suite", function () {
 			});
 	});
 
-	describe ("database-reaching tests", function () {
+	// The following tests require database initialisation, therefore they are
+	// bundled in a describe to leverage Jasmine's beforeAll and beforeEach
+	// setup functions.
+	describe ("Tests requiring an initialised database:", function () {
 		beforeAll (common.connectToTestDB);
 		beforeEach (common.deleteTestUsers);
 
-		const valid_params = [
+		const validParams = [
 			{
-				screen_name: 'screen_name',
+				screen_name: 'screen_name_0',
 				email: 'email_0@mail.com',
-				password: 'password' },
+				password: 'password'
+			},
 			{
-				screen_name: 'screen_name',
+				screen_name: 'screen_name_1',
 				email: 'email_1@mail.com',
-				password: 'password' } ];
+				password: 'password'
+			}
+		];
 
-		it ("valid registration", async function () {
-			await axios.post (end_point, valid_params [0])
-				.then (function (response) {
-					expect (response.status).toBe (200);
+		// Test that registration works.
+		it ("Registration creates a user.", async function () {
+			await axios.post (endpoint, validParams[0])
+				.then (async function (res) {
+					expect (res.status).toBe (200);
+
+					const dbUser = await UserModel.findOne ({email: validParams[0].email});
+					expect (dbUser.screen_name).toBe (validParams[0].screen_name);
 				})
 				.catch (function (error) {
 					expect (true).toBe (false);
 				});
 		});
 
-		it ("duplicate registration", async function () {
-			await axios.post (end_point, valid_params [0])
-				.then (function (response) {
-					expect (response.status).toBe (200);
+		// Test that the unique constraint on email works.
+		it ("Duplicate emails cannot register.", async function () {
+			// First user should be able to register.
+			await axios.post (endpoint, validParams[0])
+				.then (function (res) {
+					expect (res.status).toBe (200);
 				})
 				.catch (function (error) {
 					expect (true).toBe (false);
 				});
 
-			await axios.post (end_point, valid_params [0])
-				.then (function (response) {
+			// First user should not be able to reregister.
+			await axios.post (endpoint, validParams[0])
+				.then (function (res) {
 					expect (true).toBe (false);
 				})
 				.catch (function (error) {
 					expect (error.response.status).toBe (400);
 				});
 
-			await axios.post (end_point, valid_params [1])
-				.then (function (response) {
-					expect (response.status).toBe (200);
+			// Second user should be able to register.
+			await axios.post (endpoint, validParams[1])
+				.then (function (res) {
+					expect (res.status).toBe (200);
 				})
 				.catch (function (error) {
 					expect (true).toBe (false);
@@ -159,23 +200,23 @@ describe ("registration test suite", function () {
 });
 
 describe ("sign-in test suite", function () {
-	const end_point = common.TEST_APP_BASE_URL + '/api/user/sign-in';
+	const endpoint = common.BASE_URL + '/api/user/sign-in';
 
 	beforeAll (common.connectToTestDB);
-	beforeEach ( async function () { this.test_users = await common.reloadTestUsers (); });
+	beforeEach ( async function () { this.testUsers = await common.reloadTestUsers (); });
 
 	it ("bad parameters", async function () {
 		const params = [
 			{
 				email: "bademail#mail.com",
-				password: this.test_users [0].password_plain },
+				password: this.testUsers[0].passwordPlain },
 			{
-				email: this.test_users [0].email,
+				email: this.testUsers[0].email,
 				password: "p" } ];
 
 		for (const p of params) {
-			await axios.post (end_point, p)
-				.then (function (response) {
+			await axios.post (endpoint, p)
+				.then (function (res) {
 					expect (true).toBe (false);
 				})
 				.catch (function (error) {
@@ -187,15 +228,15 @@ describe ("sign-in test suite", function () {
 	it ("invalid credentials", async function () {
 		const params = [
 			{
-				email: "not_" + this.test_users [0].email,
-				password: this.test_users [0].password },
+				email: "not_" + this.testUsers[0].email,
+				password: this.testUsers[0].password },
 			{
-				email: this.test_users [0].email,
-				password: "not_" + this.test_users [0].password } ];
+				email: this.testUsers[0].email,
+				password: "not_" + this.testUsers[0].password } ];
 
 		for (const p of params) {
-			await axios.post (end_point, p)
-				.then (function (response) {
+			await axios.post (endpoint, p)
+				.then (function (res) {
 					expect (true).toBe (false);
 				})
 				.catch (function (error) {
@@ -205,14 +246,14 @@ describe ("sign-in test suite", function () {
 	});
 
 	it ("valid credentials", async function () {
-		for (const user of this.test_users) {
+		for (const user of this.testUsers) {
 			const params = {
 				email: user.email,
-				password: user.password_plain };
+				password: user.passwordPlain };
 
-			await axios.post (end_point, params)
-				.then (async function (response) {
-					expect (response.status).toBe (200);
+			await axios.post (endpoint, params)
+				.then (async function (res) {
+					expect (res.status).toBe (200);
 				})
 				.catch (function (error) {
 					expect (true).toBe (false);

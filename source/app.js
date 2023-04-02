@@ -3,10 +3,7 @@
 const express = require ('express');
 const mongoose = require ('mongoose');
 const bodyParser = require ('body-parser');
-const swagger = require ('swagger-ui-express');
 require ('dotenv/config');
-
-const swaggerConfig = require ('../config/swagger.json');
 
 const app = express ();
 
@@ -23,7 +20,6 @@ const likeRoute = require ('./routes/like');
 
 // Add routes
 app.use ('/api/version', versionRoute);
-app.use ('/api/doc', swagger.serve, swagger.setup (swaggerConfig));
 app.use ('/api/user', userRoute);
 app.use ('/api/post', postRoute);
 app.use ('/api/comment', commentRoute);

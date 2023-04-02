@@ -43,17 +43,17 @@ router.get ('/read/:post_id', jwtAuth, validatePostID, async (req, res) => {
 		req.post.n_likes = req.post.likes.length;
 
 		await req.post.populate ([
-			{path: 'owner', model: UserModel, select: '-_id'},
+			{path: 'owner', model: UserModel},
 			{
 				path: 'comments',
 				model: CommentModel,
-				populate: {path: 'author', model: UserModel, select: '-_id'},
+				populate: {path: 'author', model: UserModel},
 				options: {sort: {createdAt: 'ascending'}}
 			},
 			{
 				path: 'likes',
 				model: LikeModel,
-				populate: {path: 'backer', model: UserModel, select: '-_id'},
+				populate: {path: 'backer', model: UserModel},
 				options: {sort: {createdAt: 'ascending'}}
 			}
 		]);
@@ -113,13 +113,15 @@ router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 		// hydrate the n_likes field.
 		const posts = await PostModel.aggregate ([
 			{$match: filter},
+			// Alias _id to id.
+			{$addFields: {id: "$_id"}},
 			{$lookup: {from: 'likes', localField: '_id', foreignField: 'post', as: 'likes'}},
-			{$set: { n_likes: {$size: '$likes'}}},
+			{$set: {n_likes: {$size: '$likes'}}},
 			// The array of likes must be hydrated in order to count them,
 			// however the API does not include that array for the response
 			// with this endpoint.  Therefore it must first be included and
-			// then later unset.
-			{$unset: ['likes', '__v']},
+			// then later unset.  Also hide the __v and _id fields.
+			{$unset: ['_id', 'likes', '__v']},
 			// The $sort option uses 1 for ascending, -1 for descending.
 			{$sort: {n_likes: -1, createdAt: 1}}
 		]);
@@ -127,7 +129,7 @@ router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 		// When a user requests only their posts, a fully hydrated owner object
 		// is not needed.
 		if (req.params.scope != 'user')
-			await PostModel.populate (posts, {path: 'owner', model: UserModel, select: '-_id'});
+			await PostModel.populate (posts, {path: 'owner', model: UserModel});
 
 		res.send (posts);
 	}

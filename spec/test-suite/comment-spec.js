@@ -50,7 +50,7 @@ describe ("Comment endpoint tests:", function () {
 	// Verify that the owner of a post cannot comment on the post.
 	it ("The post owner cannot comment on the post.", async function () {
 		for (const post of this.testPosts) {
-			const header = {headers: common.createTokenHeader (post.owner)};
+			const header = {headers: common.createTokenHeader (post.owner.id)};
 			const endpoint = createEndpoint + '/' + post.id;
 
 			await axios.post (endpoint, validParams, header)
@@ -247,7 +247,7 @@ describe ("Comment endpoint tests:", function () {
 					await axios.get (endpoint, header)
 						.then (function (res) {
 							expect (res.status).toBe (200);
-							expect (res.data._id).toBe (comment.id);
+							expect (res.data.id).toBe (comment.id);
 						})
 						.catch (function (error) {
 							expect (true).toBe (false);
@@ -355,7 +355,7 @@ describe ("Comment endpoint tests:", function () {
 			// Test that comment deletion works.
 			it ("Users can delete comments.", async function () {
 				for (const comment of this.testComments) {
-					const header = {headers: common.createTokenHeader (comment.author)};
+					const header = {headers: common.createTokenHeader (comment.author.id)};
 					const endpoint = deleteEndpoint + '/' + comment.id;
 
 					await axios.delete (endpoint, header)

@@ -4,9 +4,8 @@ const joi = require ('joi');
 const {CommentModel} = require ('./comment');
 const {LikeModel} = require ('./like');
 
-// Create the schema for Post objects.  Hide __v from queries and API
-// responses.  Setting the timestamps option allows Mongoose to manage
-// createdAt and updatedAt times automatically.
+// Create the schema for Post objects.  Setting the timestamps option allows
+// Mongoose to manage createdAt and updatedAt times automatically.
 const postSchema = mongoose.Schema ({
 	title: {type: String, required: true, min: 3, max: 256},
 	body: {type: String, required: true, min: 3, max: 1024},
@@ -28,8 +27,7 @@ const postSchema = mongoose.Schema ({
 	},
 	// The n_likes field is only created by the aggregate method, it should not
 	// appear outside of that context.
-	n_likes: {type: Number, select: false},
-	__v: {type: Number, select: false}
+	n_likes: {type: Number, select: false}
 }, {timestamps: true});
 
 // If the post is deleted, the post's comments and likes should also be

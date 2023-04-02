@@ -26,7 +26,7 @@ for i in 1 2 3 ; do
 	echo "------------------------"
 	echo
 
-	post_ids+=`echo $post_body | grep -Po '"_id":"\K[^"]*'`
+	post_ids+=`echo $post_body | grep -Po '"id":"\K[^"]*'`
 
 	sleep 3
 done;

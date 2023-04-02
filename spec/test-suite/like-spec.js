@@ -43,7 +43,7 @@ describe ("Like endpoint tests:", function () {
 	// Verify that the owner of a post cannot like the post.
 	it ("The post owner cannot like the post.", async function () {
 		for (const post of this.testPosts) {
-			const header = {headers: common.createTokenHeader (post.owner)};
+			const header = {headers: common.createTokenHeader (post.owner.id)};
 			const endpoint = createEndpoint + '/' + post.id;
 
 			await axios.post (endpoint, {}, header)
@@ -224,7 +224,7 @@ describe ("Like endpoint tests:", function () {
 				const testLikes = await common.reloadTestLikes ();
 
 				for (const like of testLikes) {
-					const header = {headers: common.createTokenHeader (like.backer)};
+					const header = {headers: common.createTokenHeader (like.backer.id)};
 					const endpoint = deleteEndpoint + '/' + like.id;
 
 					await axios.delete (endpoint, header)

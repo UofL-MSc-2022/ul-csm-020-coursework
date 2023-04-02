@@ -2,18 +2,26 @@ const mongoose = require ('mongoose');
 const joi = require ('joi');
 const bcryptjs = require ('bcryptjs');
 
-// Create the schema for User objects.  Set select=false for __v, email, and
-// password so that they will not appear in a query result (and by extension,
-// an API response).  Make email a unique index so that if a user tries to
-// register with an existing email address, Mongoose will throw an error
-// preventing the duplicate registration.  Setting the timestamps option allows
-// Mongoose to manage createdAt and updatedAt times automatically.
+// Create the schema for User objects.  Set select=false for email and password
+// so that they will not appear in a query result (and by extension, an API
+// response).  Make email a unique index so that if a user tries to register
+// with an existing email address, Mongoose will throw an error preventing the
+// duplicate registration.  Setting the timestamps option allows Mongoose to
+// manage createdAt and updatedAt times automatically.
 const userSchema = mongoose.Schema ({
 	screen_name: {type: String, required: true, min: 3, max: 256},
 	email: {type: String, index: true, unique: true, required: true, select: false, min: 6, max: 256},
 	password: {type: String, required: true, select: false, min: 6, max: 1024},
-	__v: {type: Number, select: false}
 }, {timestamps: true});
+
+// Hide id and __v from API responses.
+userSchema.set ('toJSON', {
+	transform: (orig, conv) => {
+		delete conv.id;
+		delete conv._id;
+		delete conv.__v;
+	}
+});
 
 // User object member method which validates a given password.
 userSchema.methods.validPassword = async function (password) {

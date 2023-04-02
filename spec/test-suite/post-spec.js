@@ -222,7 +222,7 @@ describe ("Post endpoint tests:", function () {
 					await axios.get (endpoint, header)
 						.then (function (res) {
 							expect (res.status).toBe (200);
-							expect (res.data._id).toBe (post.id);
+							expect (res.data.id).toBe (post.id);
 
 							expect (res.data.comments).toHaveAscendingCreationTimes ();
 							expect (res.data.likes).toHaveAscendingCreationTimes ();
@@ -269,7 +269,7 @@ describe ("Post endpoint tests:", function () {
 
 				for (const post of this.testPosts) {
 					const endpoint = updateEndpoint + '/' + post.id;
-					const header = {headers: common.createTokenHeader (post.owner)};
+					const header = {headers: common.createTokenHeader (post.owner.id)};
 
 					// Test each combination.
 					for (params of testParams)
@@ -296,7 +296,7 @@ describe ("Post endpoint tests:", function () {
 					const originalBody = post.body;
 
 					const endpoint = updateEndpoint + '/' + post.id;
-					const header = {headers: common.createTokenHeader (post.owner)};
+					const header = {headers: common.createTokenHeader (post.owner.id)};
 
 					// First update, only title changed.
 					await axios.patch (endpoint, testParams.firstUpdate, header)
@@ -387,7 +387,7 @@ describe ("Post endpoint tests:", function () {
 				await common.reloadTestLikes ();
 
 				for (const post of await this.testPosts) {
-					const header = {headers: common.createTokenHeader (post.owner)};
+					const header = {headers: common.createTokenHeader (post.owner.id)};
 					const endpoint = deleteEndpoint + '/' + post.id;
 
 					let nComments = await CommentModel.countDocuments ({post: post.id});

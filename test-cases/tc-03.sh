@@ -2,7 +2,7 @@
 
 source ${0:a:h}/setup
 
-end_point="/api/version"
+end_point="/api/post/list/all"
 
 echo "--- Request ------------"
 echo "GET $end_point"

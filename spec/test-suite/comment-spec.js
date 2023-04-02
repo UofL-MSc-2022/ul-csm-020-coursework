@@ -192,7 +192,6 @@ describe ("Comment endpoint tests:", function () {
 							.then (function (res) {
 								expect (res.status).toBe (200);
 								expect (res.data.post).toBe (post.id);
-								expect (res.data.author).toBe (user.id);
 							})
 							.catch (function (error) {
 								expect (true).toBe (false);

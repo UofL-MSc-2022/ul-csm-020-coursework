@@ -22,11 +22,17 @@ router.post ('/create/:post_id', jwtAuth, validatePostID, verifyNotPostOwner, as
 		if ('error' in validation)
 			return res.status (400).send ({message: validation.error.details[0].message});
 
-		const newComment = await CommentModel.create ({
+		let newComment = await CommentModel.create ({
 			post: req.post,
 			body: req.body.body,
 			author: req.user
 		});
+
+		// Hide the author field, that is the owner id, from the response.  In
+		// order to remove the property, the Mongoose document, CommentModel,
+		// must be converted to a JSON object.
+		newComment = newComment.toJSON ();
+		delete newComment.author;
 
 		res.send (newComment);
 	}
@@ -59,9 +65,11 @@ router.patch ('/update/:comment_id', jwtAuth, validateCommentID, verifyCommentAu
 
 		// The updateOne method returns a summary of the update operation.
 		// This endpoint returns the new object with the updated data and it
-		// must be loaded from the database after updateOne completes.
+		// must be loaded from the database after updateOne completes.  Hide
+		// the author field to prevent user ids from being sent in an API
+		// response.
 		await req.comment.updateOne (req.body);
-		req.comment = await CommentModel.findById (req.comment.id);
+		req.comment = await CommentModel.findById (req.comment.id).select ('-author');
 
 		res.send (req.comment);
 	}
@@ -93,14 +101,19 @@ router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 			filter = {author: req.user};
 
 		// Hydration happens at two levels: comment -> post -> owner.
-		const comments = await CommentModel.find (filter)
+		const commentsQuery = CommentModel.find (filter)
 			.sort ({createdAt: 'ascending'})
 			.populate ([
 				{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},
 				{path: 'author', model: UserModel}
 			]);
 
-		res.send (comments);
+		// When a user requests only their comments, the author field is
+		// skipped.
+		if (req.params.scope == 'user')
+			commentsQuery.select ('-author');
+
+		res.send (await commentsQuery.exec ());
 	}
 	catch (error) {
 		res.status (400).send ({message: error});

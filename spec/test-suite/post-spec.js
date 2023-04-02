@@ -159,7 +159,6 @@ describe ("Post endpoint tests:", function () {
 					await axios.post (createEndpoint, validParams, header)
 						.then (function (res) {
 							expect (res.status).toBe (200);
-							expect (res.data.owner).toBe (user.id);
 						})
 						.catch (function (error) {
 							expect (true).toBe (false);

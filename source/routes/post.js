@@ -22,11 +22,17 @@ router.post ('/create', jwtAuth, async (req, res) => {
 		if ('error' in validation)
 			return res.status (400).send ({message: validation.error.details[0].message});
 
-		newPost = await PostModel.create ({
+		let newPost = await PostModel.create ({
 			title: req.body.title,
 			body: req.body.body,
 			owner: req.user
-		});
+		})
+
+		// Hide the owner field, that is the owner id, from the response.  In
+		// order to remove the property, the Mongoose document, CommentModel,
+		// must be converted to a JSON object.
+		newPost = newPost.toJSON ();
+		delete newPost.owner;
 
 		res.send (newPost);
 	}
@@ -48,13 +54,15 @@ router.get ('/read/:post_id', jwtAuth, validatePostID, async (req, res) => {
 				path: 'comments',
 				model: CommentModel,
 				populate: {path: 'author', model: UserModel},
-				options: {sort: {createdAt: 'ascending'}}
+				options: {sort: {createdAt: 'ascending'}},
+				select: '-post'
 			},
 			{
 				path: 'likes',
 				model: LikeModel,
 				populate: {path: 'backer', model: UserModel},
-				options: {sort: {createdAt: 'ascending'}}
+				options: {sort: {createdAt: 'ascending'}},
+				select: '-post'
 			}
 		]);
 
@@ -67,16 +75,18 @@ router.get ('/read/:post_id', jwtAuth, validatePostID, async (req, res) => {
 
 router.patch ('/update/:post_id', jwtAuth, validatePostID, verifyPostOwner, async (req, res) => {
 	try {
-		// Validate request parameters against schema.
+		// Both fields are optional, however at least one field must be sent.
 		const validation = validateUpdate (req.body);
 		if ('error' in validation)
-			return res.status (400).send ({message: validation.error.details[0].message});
+			return res.status (400).send ({message: "At least one parameter must be set"});
 
 		// The updateOne method returns a summary of the update operation.
 		// This endpoint returns the new object with the updated data and it
-		// must be loaded from the database after updateOne completes.
+		// must be loaded from the database after updateOne completes.  Hide
+		// the owner field to prevent user ids from being sent in an API
+		// response.
 		await req.post.updateOne (req.body);
-		req.post = await PostModel.findById (req.post.id);
+		req.post = await PostModel.findById (req.post.id,).select ('-owner');
 
 		res.send (req.post);
 	}
@@ -111,7 +121,7 @@ router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 
 		// Use the aggregate method in order to count the number of likes to
 		// hydrate the n_likes field.
-		const posts = await PostModel.aggregate ([
+		const postsAggregate = PostModel.aggregate ([
 			{$match: filter},
 			// Alias _id to id.
 			{$addFields: {id: "$_id"}},
@@ -126,9 +136,13 @@ router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 			{$sort: {n_likes: -1, createdAt: 1}}
 		]);
 
-		// When a user requests only their posts, a fully hydrated owner object
-		// is not needed.
-		if (req.params.scope != 'user')
+		// When a user requests only their posts, the owner field is skipped.
+		if (req.params.scope == 'user')
+			postsAggregate.append ({$unset: 'owner'});
+
+		const posts = await postsAggregate.exec ();
+
+		if (req.params.scope == 'all')
 			await PostModel.populate (posts, {path: 'owner', model: UserModel});
 
 		res.send (posts);

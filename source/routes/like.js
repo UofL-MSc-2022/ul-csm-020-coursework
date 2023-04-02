@@ -14,10 +14,16 @@ const router = express.Router ();
 
 router.post ('/create/:post_id', jwtAuth, validatePostID, verifyNotPostOwner, async (req, res) => {
 	try {
-		const newLike = await LikeModel.create ({
+		let newLike = await LikeModel.create ({
 			post: req.post,
 			backer: req.user
 		});
+
+		// Hide the backer field, that is the owner id, from the response.  In
+		// order to remove the property, the Mongoose document, CommentModel,
+		// must be converted to a JSON object.
+		newLike = newLike.toJSON ();
+		delete newLike.backer;
 
 		res.send (newLike);
 	}
@@ -57,14 +63,19 @@ router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 		if (req.params.scope == 'user')
 			filter = {backer: req.user};
 
-		const likes = await LikeModel.find (filter)
+		const likesQuery = LikeModel.find (filter)
 			.sort ({createdAt: 'ascending'})
 			.populate ([
 				{path: 'post', model: PostModel, populate: {path: 'owner', model: UserModel}},
 				{path: 'backer', model: UserModel}
 			]);
 
-		res.send (likes);
+		// When a user requests only their comments, the backer field is
+		// skipped.
+		if (req.params.scope == 'user')
+			likesQuery.select ('-backer');
+
+		res.send (await likesQuery.exec ());
 	}
 	catch (error) {
 		res.status (400).send ({message: error});

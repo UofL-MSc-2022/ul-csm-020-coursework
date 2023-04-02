@@ -1,7 +1,14 @@
 {
 	"swagger": "2.0",
+	"tryItOutEnabled": "true",
 	"info": {
-		"title": "MiniWall API"
+		"title": "MiniWall API",
+		"description": "CSM020 Coursework Jan-Apr 2023",
+		"contact": {
+			"name": "James Krehl",
+			"email": "jek9@student.london.ac.uk"
+		},
+		"version": "1.0.0"
 	},
 	"paths": {
 		"/api/version": {
@@ -13,6 +20,38 @@
 						"description": "OK"
 					}
 				}
+			}
+		},
+		"/api/user/register": {
+			"post": {
+				"summary": "Register new user",
+				"consumes": "application/json",
+				"parameters": [
+					{
+						"in": "body",
+						"schema": {"$ref": "#/definitions/User"}
+					}
+				],
+				"produces": "application/json",
+				"responses": {
+					"200": {
+						"description": "OK"
+					},
+					"400": {
+						"description": "Invalid"
+					}
+				}
+			}
+		}
+	},
+	"definitions": {
+		"User": {
+			"type": "object",
+			"required": ["screen_name", "email", "password"],
+			"properties": {
+				"screen_name": {"type": "string"},
+				"email": {"type": "string"},
+				"password": {"type": "string"}
 			}
 		}
 	}

@@ -119,7 +119,7 @@ router.get ('/list/:scope(all|user)', jwtAuth, async (req, res) => {
 			// however the API does not include that array for the response
 			// with this endpoint.  Therefore it must first be included and
 			// then later unset.
-			{$unset: 'likes'},
+			{$unset: ['likes', '__v']},
 			// The $sort option uses 1 for ascending, -1 for descending.
 			{$sort: {n_likes: -1, createdAt: 1}}
 		]);

@@ -1,3 +1,11 @@
+/**
+ * MiniWall ReST API
+ * CSM020 Jan-Apr 2023
+ * James Krehl
+ *
+ * Validation schema for users.
+ */
+
 const joi = require ('joi');
 
 // Use field definitions from model module.

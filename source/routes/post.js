@@ -1,3 +1,11 @@
+/**
+ * MiniWall ReST API
+ * CSM020 Jan-Apr 2023
+ * James Krehl
+ *
+ * CRUD logic for posts.
+ */
+
 const express = require ('express');
 
 // Models
@@ -41,6 +49,7 @@ router.post ('/create', jwtAuth, async (req, res) => {
 	}
 });
 
+// The :post_id parameter is required for validatePostID
 router.get ('/read/:post_id', jwtAuth, validatePostID, async (req, res) => {
 	try {
 		// Hydrate the foreign keys in the post object.
@@ -73,6 +82,7 @@ router.get ('/read/:post_id', jwtAuth, validatePostID, async (req, res) => {
 	}
 });
 
+// The :post_id parameter is required for validatePostID and verifyPostOwner
 router.patch ('/update/:post_id', jwtAuth, validatePostID, verifyPostOwner, async (req, res) => {
 	try {
 		// Both fields are optional, however at least one field must be sent.
@@ -95,6 +105,7 @@ router.patch ('/update/:post_id', jwtAuth, validatePostID, verifyPostOwner, asyn
 	}
 });
 
+// The :post_id parameter is required for validatePostID and verifyPostOwner
 router.delete ('/delete/:post_id', jwtAuth, validatePostID, verifyPostOwner, async (req, res) => {
 	try {
 		// The deleteOne function returns a summary of the delete action,

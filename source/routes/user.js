@@ -1,3 +1,11 @@
+/**
+ * MiniWall ReST API
+ * CSM020 Jan-Apr 2023
+ * James Krehl
+ *
+ * User registration and authentication logic.
+ */
+
 const express = require ('express');
 
 const router = express.Router ();

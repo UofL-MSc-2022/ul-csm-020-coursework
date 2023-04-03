@@ -1,3 +1,11 @@
+/**
+ * MiniWall ReST API
+ * CSM020 Jan-Apr 2023
+ * James Krehl
+ *
+ * User model and field validation definitions.
+ */
+
 const mongoose = require ('mongoose');
 const joi = require ('joi');
 const bcryptjs = require ('bcryptjs');

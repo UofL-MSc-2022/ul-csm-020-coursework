@@ -1,3 +1,11 @@
+/**
+ * MiniWall ReST API
+ * CSM020 Jan-Apr 2023
+ * James Krehl
+ *
+ * Express pipeline function to verify access tokens.
+ */
+
 const {UserModel} = require ('../models/user');
 const {verifyAccessToken} = require ('../auth/jwt');
 

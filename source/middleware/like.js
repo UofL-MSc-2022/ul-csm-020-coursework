@@ -1,3 +1,12 @@
+/**
+ * MiniWall ReST API
+ * CSM020 Jan-Apr 2023
+ * James Krehl
+ *
+ * Express pipeline functions to inject the queried like object into the router
+ * request object and restrict CRUD operations to the correct users.
+ */
+
 const {LikeModel} = require ('../models/like');
 
 // Verifies that an endpoint with a like_id parameter corresponds to a like

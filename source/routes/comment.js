@@ -1,3 +1,11 @@
+/**
+ * MiniWall ReST API
+ * CSM020 Jan-Apr 2023
+ * James Krehl
+ *
+ * CRUD logic for comments.
+ */
+
 const express = require ('express');
 
 // Models
@@ -15,6 +23,7 @@ const {validateCommentID, verifyCommentAuthor} = require ('../middleware/comment
 
 const router = express.Router ();
 
+// The :post_id parameter is required for validatePostID and verifyNotPostOwner
 router.post ('/create/:post_id', jwtAuth, validatePostID, verifyNotPostOwner, async (req, res) => {
 	try {
 		// Validate request parameters against schema.
@@ -41,6 +50,7 @@ router.post ('/create/:post_id', jwtAuth, validatePostID, verifyNotPostOwner, as
 	}
 });
 
+// The :comment_id parameter is required for validateCommentID
 router.get ('/read/:comment_id', jwtAuth, validateCommentID, async (req, res) => {
 	try {
 		// Hydration happens at two levels: comment -> post -> owner.
@@ -56,6 +66,7 @@ router.get ('/read/:comment_id', jwtAuth, validateCommentID, async (req, res) =>
 	}
 });
 
+// The :comment_id parameter is required for validateCommentID and verifyCommentAuthor
 router.patch ('/update/:comment_id', jwtAuth, validateCommentID, verifyCommentAuthor, async (req, res) => {
 	try {
 		// Validate request parameters against schema.
@@ -78,6 +89,7 @@ router.patch ('/update/:comment_id', jwtAuth, validateCommentID, verifyCommentAu
 	}
 });
 
+// The :comment_id parameter is required for validateCommentID and verifyCommentAuthor
 router.delete ('/delete/:comment_id', jwtAuth, validateCommentID, verifyCommentAuthor, async (req, res) => {
 	try {
 		// The deleteOne function returns a summary of the delete action,

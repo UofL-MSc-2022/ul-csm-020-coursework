@@ -1,3 +1,12 @@
+/**
+ * MiniWall ReST API
+ * CSM020 Jan-Apr 2023
+ * James Krehl
+ *
+ * This file is the entry point for the application.  It sets up the routing
+ * and database connections.
+ */
+
 "use strict";
 
 const express = require ('express');

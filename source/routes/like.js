@@ -1,3 +1,11 @@
+/**
+ * MiniWall ReST API
+ * CSM020 Jan-Apr 2023
+ * James Krehl
+ *
+ * CRUD logic for likes.
+ */
+
 const express = require ('express');
 
 // Models
@@ -12,6 +20,7 @@ const {validateLikeID, verifyLikeBacker} = require ('../middleware/like');
 
 const router = express.Router ();
 
+// The :post_id parameter is required for validatePostID and verifyNotPostOwner
 router.post ('/create/:post_id', jwtAuth, validatePostID, verifyNotPostOwner, async (req, res) => {
 	try {
 		let newLike = await LikeModel.create ({
@@ -41,6 +50,7 @@ router.post ('/create/:post_id', jwtAuth, validatePostID, verifyNotPostOwner, as
 	}
 });
 
+// The :like_id parameter is required for validateLikeID and verifyLikeBacker
 router.delete ('/delete/:like_id', jwtAuth, validateLikeID, verifyLikeBacker, async (req, res) => {
 	try {
 		// The deleteOne function returns a summary of the delete action,

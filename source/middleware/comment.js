@@ -1,3 +1,12 @@
+/**
+ * MiniWall ReST API
+ * CSM020 Jan-Apr 2023
+ * James Krehl
+ *
+ * Express pipeline functions to inject the queried comment object into the
+ * router request object and restrict CRUD operations to the correct users.
+ */
+
 const {CommentModel} = require ('../models/comment');
 
 // Verifies that an endpoint with a comment_id parameter corresponds to a

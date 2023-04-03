@@ -1,3 +1,12 @@
+/**
+ * MiniWall ReST API
+ * CSM020 Jan-Apr 2023
+ * James Krehl
+ *
+ * Express pipeline functions to inject the queried post object into the router
+ * request object and restrict CRUD operations to the correct users.
+ */
+
 const {PostModel} = require ('../models/post');
 
 // Verifies that an endpoint with a post_id parameter corresponds to a post

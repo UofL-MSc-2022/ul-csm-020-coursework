@@ -1,4 +1,9 @@
-/* Helper functions to manage the creation and verification of access tokens.
+/**
+ * MiniWall ReST API
+ * CSM020 Jan-Apr 2023
+ * James Krehl
+ *
+ * Helper functions to manage the creation and verification of access tokens.
  * The public/private key pair should be defined in the .env file and they must
  * have a minimum modulus of 2048.
  */

@@ -252,7 +252,7 @@ describe ("Sign-in tests:", function () {
 	});
 
 	// Verify that sign-in succeeds with valid credentials.
-	it ("Sign-invalid credentials", async function () {
+	it ("Users can sign-in.", async function () {
 		for (const user of this.testUsers) {
 			const params = {
 				email: user.email,

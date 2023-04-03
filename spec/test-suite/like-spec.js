@@ -101,7 +101,7 @@ describe ("Like endpoint tests:", function () {
 			});
 
 			// Verify that the post id is valid.
-			it ("post id must be valid.", async function () {
+			it ("Post id must be valid.", async function () {
 				const header = {headers: common.createTokenHeader (this.testUsers[0].id)};
 				const endpoints = [
 					// Malformed post id.
